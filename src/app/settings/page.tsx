@@ -24,6 +24,7 @@ export default async function SettingsPage() {
             musicTaste: parseMusicTaste(user.musicTaste),
             spotifyPlaylist: user.spotifyPlaylist,
             notifPrefs: parseNotifPrefs(user.notifPrefs),
+            googleEmail: user.googleEmail,
           }}
           integrations={cfg.integrations}
         />

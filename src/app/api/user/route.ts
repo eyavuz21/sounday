@@ -14,6 +14,7 @@ export async function GET() {
     musicTaste: parseMusicTaste(user.musicTaste),
     spotifyPlaylist: user.spotifyPlaylist,
     notifPrefs: parseNotifPrefs(user.notifPrefs),
+    googleEmail: user.googleEmail,
     onboarded: user.onboarded,
     primeUnlocked: user.primeUnlocked,
   });

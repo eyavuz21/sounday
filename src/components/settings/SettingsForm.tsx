@@ -4,7 +4,7 @@ import { useState } from "react";
 import TasteEditor from "@/components/TasteEditor";
 import type { NotifPrefs } from "@/lib/types";
 
-type Integrations = { twilio: boolean; spotify: boolean };
+type Integrations = { twilio: boolean; spotify: boolean; google: boolean };
 
 export default function SettingsForm({
   initial,
@@ -15,6 +15,7 @@ export default function SettingsForm({
     musicTaste: string[];
     spotifyPlaylist: string | null;
     notifPrefs: NotifPrefs;
+    googleEmail: string | null;
   };
   integrations: Integrations;
 }) {
@@ -24,6 +25,29 @@ export default function SettingsForm({
   const [prefs, setPrefs] = useState<NotifPrefs>(initial.notifPrefs);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<string | null>(null);
+
+  async function syncGoogle() {
+    setSyncing(true);
+    setSyncMsg(null);
+    try {
+      const res = await fetch("/api/google/sync", { method: "POST" });
+      const json = await res.json();
+      setSyncMsg(
+        res.ok ? `Synced ${json.synced} events` : json.error ?? "Sync failed",
+      );
+    } catch {
+      setSyncMsg("Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  async function disconnectGoogle() {
+    await fetch("/api/google/disconnect", { method: "POST" });
+    window.location.reload();
+  }
 
   async function save() {
     setSaving(true);
@@ -129,6 +153,51 @@ export default function SettingsForm({
             ? "Note: with a Spotify app in development mode, reading playlist contents may be blocked — your music taste above is used as the fallback."
             : "Spotify isn't connected, so your music taste above is used instead."}
         </p>
+      </section>
+
+      <section className="card">
+        <span className="label">Google Calendar</span>
+        {initial.googleEmail ? (
+          <div className="mt-1 flex flex-col gap-3">
+            <p className="text-sm text-ink">
+              Connected as{" "}
+              <span className="font-semibold">{initial.googleEmail}</span>. Your
+              upcoming events are pulled in automatically and scored.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={syncGoogle}
+                disabled={syncing}
+                className="btn-ghost"
+              >
+                {syncing ? "Syncing…" : "Sync now"}
+              </button>
+              <button
+                onClick={disconnectGoogle}
+                className="btn-ghost text-rose-600"
+              >
+                Disconnect
+              </button>
+            </div>
+            {syncMsg && <p className="text-xs text-mist">{syncMsg}</p>}
+          </div>
+        ) : integrations.google ? (
+          <div className="mt-1 flex flex-col gap-2">
+            <p className="text-sm text-mist">
+              Connect your Google account to auto-import your schedule — no CSV
+              upload. We request read-only access to your calendar.
+            </p>
+            <a href="/api/google/connect" className="btn-primary text-center">
+              Connect Google Calendar
+            </a>
+          </div>
+        ) : (
+          <p className="mt-1 text-sm text-mist">
+            Google Calendar isn&rsquo;t configured yet (no OAuth credentials). Once
+            set up, you&rsquo;ll be able to connect your account here to import
+            your schedule automatically.
+          </p>
+        )}
       </section>
 
       <button onClick={save} disabled={saving} className="btn-primary">

@@ -17,6 +17,11 @@ model User {
   musicTaste   String          @default("[]")
   // Optional Spotify playlist URL/URI used as a style reference for generation
   spotifyPlaylist String?
+  // Google Calendar OAuth — tokens + the connected Google account email
+  googleEmail        String?
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleTokenExpiry  DateTime?
   onboarded    Boolean         @default(false)
   primeUnlocked Boolean        @default(false)
   createdAt    DateTime        @default(now())
@@ -44,6 +49,10 @@ model CalendarEvent {
   contextPurpose  String?
   trackUrl        String?
   lyrics          String?
+  // "seed" (demo data) | "google" (synced from Google Calendar)
+  source          String     @default("seed")
+  // Google Calendar event id (used to de-dupe on re-sync); null for seed data
+  externalId      String?
   createdAt       DateTime   @default(now())
   reminders       Reminder[]
 }

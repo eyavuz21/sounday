@@ -18,9 +18,14 @@ function startOfWeek(d: Date): Date {
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default async function WeekPage() {
+export default async function WeekPage({
+  searchParams,
+}: {
+  searchParams?: { google?: string };
+}) {
   const user = await getOrCreateUser();
   const events = await getWeekEvents(user.id);
+  const justConnected = searchParams?.google === "connected";
 
   const base =
     events.length > 0
@@ -63,6 +68,12 @@ export default async function WeekPage() {
           </p>
           <h1 className="text-3xl font-bold text-ink">This week in sound</h1>
         </header>
+
+        {justConnected && (
+          <div className="mb-4 rounded-2xl bg-teal-400/10 px-4 py-3 text-sm font-medium text-teal-700 ring-1 ring-teal-400/30">
+            Google Calendar connected — your upcoming events are now in your week.
+          </div>
+        )}
 
         <section className="card mb-6 animate-fade-up">
           <StressCurve points={points} />
