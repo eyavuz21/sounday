@@ -1,0 +1,39 @@
+# Render blueprint — https://render.com/docs/blueprint-spec
+# One-click deploy: Render Dashboard → New → Blueprint → pick the hodoea/sounday repo.
+# Every push to the connected branch then auto-deploys.
+services:
+  - type: web
+    name: sounday
+    runtime: node
+    plan: free
+    # Build the app, create the SQLite schema, and seed the demo week.
+    buildCommand: npm install && npm run build && npm run db:push && npm run db:seed
+    startCommand: npm run start
+    autoDeploy: true
+    healthCheckPath: /week
+    envVars:
+      # SQLite lives on the instance's local disk (resets on redeploy on the free
+      # tier — the build re-seeds the demo week each time). Add a Render Disk for
+      # persistence if you upgrade off free.
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: NODE_VERSION
+        value: "22.12.0"
+      # Secrets — set these in the Render dashboard (Environment tab). sync:false
+      # keeps them out of source control.
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: CALA_API_KEY
+        sync: false
+      - key: VAPI_PUBLIC_KEY
+        sync: false
+      - key: VAPI_PRIVATE_KEY
+        sync: false
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false

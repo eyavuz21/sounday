@@ -17,11 +17,14 @@ your phone via SMS on a cadence you choose.
 - **Next.js 14** (App Router) + **TypeScript**
 - **Tailwind CSS** — serene blue/teal, mobile-first, large tap targets
 - **Prisma + SQLite** — local, zero-config datastore
-- Integrations: **Suno** (music), **Cala** (company enrichment), **Vapi**
-  (voice input), **Twilio** (SMS), **Stripe** (€1 Prime unlock)
+- Integrations: **ElevenLabs Music** (AI track generation), **Cala** (company
+  enrichment), **Vapi** (voice input), **Google Calendar** (auto-import schedule),
+  **Spotify** (taste/style hint), **Twilio** (SMS), **Stripe** (€1 Prime unlock)
 
 Every external integration degrades gracefully: with no API key the app falls
-back to sample tracks / simulated SMS / on-device voice so the demo never breaks.
+back to mood-matched sample tracks / simulated SMS / on-device voice so the demo
+never breaks. Music generation is provider-agnostic (ElevenLabs → Suno →
+Replicate → Spotify → sample) and switches on the moment a key is present.
 
 ## Pages
 
@@ -31,7 +34,7 @@ back to sample tracks / simulated SMS / on-device voice so the demo never breaks
 | `/onboarding` | 3-step setup (phone + music taste, by text or voice) |
 | `/week` | Week dashboard — stress curve + days with events & badges |
 | `/event/[id]` | Event detail — context card, generate, mode, cadence, player |
-| `/settings` | Phone, notification prefs, music taste |
+| `/settings` | Phone, notification prefs, music taste, **Connect Google Calendar** |
 
 ## Getting started
 
@@ -73,7 +76,7 @@ events get no reminders.
 
 | Letter | Service | File | Fallback |
 |--------|---------|------|----------|
-| A | **Suno** music | `src/lib/integrations/suno.ts` | sample WAV per mode |
+| A | **ElevenLabs Music** (+ Suno/Replicate) | `src/lib/integrations/elevenlabs.ts` | mood-matched Spotify / sample track per mode |
 | B | **Cala** company facts | `src/lib/integrations/cala.ts` | no facts, manual entry |
 | C | **Vapi** voice input | `src/components/event/VoiceCapture.tsx` | on-device Web Speech |
 | D | **Twilio** SMS | `src/lib/integrations/twilio.ts` | simulated send |
@@ -88,6 +91,32 @@ events get no reminders.
 - **SMS scheduling**: cadence → reminder rows (`reminderTimes`). A worker hits
   `POST /api/cron/send-reminders` to dispatch due reminders (wire to Vercel Cron
   or any scheduler in production).
+
+## Google Calendar connect
+
+Settings → **Connect Google Calendar** runs an OAuth flow (`calendar.readonly`)
+and imports your upcoming events, running them through the same stress-scoring +
+high-stakes engine. Synced events are tagged `source="google"` and live alongside
+the seed demo week; **Sync now** / **Disconnect** manage them. Routes live under
+`src/app/api/google/*`; the OAuth redirect URI is derived from the request origin
+so it works on localhost and on the deployed domain.
+
+> While the Google Cloud app is in "testing", only emails added as **Test users**
+> on the OAuth consent screen can connect.
+
+## Deploy (Render)
+
+The repo ships a [`render.yaml`](./render.yaml) blueprint:
+
+1. Render Dashboard → **New → Blueprint** → pick the `hodoea/sounday` repo.
+2. In the service's **Environment** tab, set the API keys (see `.env.example`).
+3. Deploy. Every push to the connected branch then **auto-deploys**.
+4. Add `https://<your-app>.onrender.com/api/google/callback` to your Google OAuth
+   client's **Authorized redirect URIs**.
+
+The free tier sleeps after ~15 min idle and its disk resets on redeploy (the
+build re-seeds the demo week each time). Add a Render Disk or upgrade the plan
+for a persistent database.
 
 ## Secrets
 
