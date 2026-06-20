@@ -12,6 +12,7 @@ export async function GET() {
     email: user.email,
     phone: user.phone,
     musicTaste: parseMusicTaste(user.musicTaste),
+    spotifyPlaylist: user.spotifyPlaylist,
     notifPrefs: parseNotifPrefs(user.notifPrefs),
     onboarded: user.onboarded,
     primeUnlocked: user.primeUnlocked,
@@ -24,6 +25,10 @@ export async function PATCH(req: Request) {
 
   const data: Record<string, unknown> = {};
   if ("phone" in body) data.phone = body.phone ? String(body.phone) : null;
+  if ("spotifyPlaylist" in body)
+    data.spotifyPlaylist = body.spotifyPlaylist
+      ? String(body.spotifyPlaylist).trim()
+      : null;
   if ("onboarded" in body) data.onboarded = Boolean(body.onboarded);
   if (Array.isArray(body.musicTaste)) {
     const taste = body.musicTaste
@@ -51,6 +56,7 @@ export async function PATCH(req: Request) {
     email: updated.email,
     phone: updated.phone,
     musicTaste: parseMusicTaste(updated.musicTaste),
+    spotifyPlaylist: updated.spotifyPlaylist,
     notifPrefs: parseNotifPrefs(updated.notifPrefs),
     onboarded: updated.onboarded,
   });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getOrCreateUser, parseMusicTaste } from "@/lib/data";
 import { generateMusic } from "@/lib/integrations/music";
+import { artistsFromPlaylist } from "@/lib/integrations/spotify";
 import { buildLyrics } from "@/lib/integrations/lyrics";
 import type { EventMode } from "@/lib/types";
 
@@ -19,7 +20,12 @@ export async function POST(
 
   const user = await getOrCreateUser();
   const taste = parseMusicTaste(user.musicTaste);
-  const styleHint = taste.length ? taste.join(", ") : null;
+  // Pull loose style influences from the user's linked Spotify playlist (their
+  // favourite/most-listened artists), then merge with any typed taste. Falls
+  // back to taste alone when Spotify can't be read.
+  const playlistArtists = await artistsFromPlaylist(user.spotifyPlaylist);
+  const styleTerms = [...new Set([...playlistArtists, ...taste])].slice(0, 6);
+  const styleHint = styleTerms.length ? styleTerms.join(", ") : null;
 
   // Prime mode: supportive, meeting-themed affirmation lyrics. Wind-down: none.
   const lyrics = buildLyrics(mode, {

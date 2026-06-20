@@ -15,6 +15,8 @@ model User {
   notifPrefs   String          @default("{\"sms\":true,\"beforeMeeting\":true,\"nightBefore\":true,\"morningOf\":true}")
   // JSON string array of up to 5 genres/artists
   musicTaste   String          @default("[]")
+  // Optional Spotify playlist URL/URI used as a style reference for generation
+  spotifyPlaylist String?
   onboarded    Boolean         @default(false)
   primeUnlocked Boolean        @default(false)
   createdAt    DateTime        @default(now())

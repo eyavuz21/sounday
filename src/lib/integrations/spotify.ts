@@ -85,6 +85,64 @@ type SpotifyTrack = {
   artists: { name: string }[];
 };
 
+/** Extract a Spotify playlist id from a URL, URI, or bare id. */
+export function parsePlaylistId(ref?: string | null): string | null {
+  if (!ref) return null;
+  const s = ref.trim();
+  if (!s) return null;
+  // spotify:playlist:ID
+  const uri = s.match(/playlist[:/]([A-Za-z0-9]{22})/);
+  if (uri) return uri[1];
+  // bare 22-char base62 id
+  if (/^[A-Za-z0-9]{22}$/.test(s)) return s;
+  return null;
+}
+
+type PlaylistItem = { track: { artists?: { name: string }[] } | null };
+
+/**
+ * Read a user playlist and return its most frequent artist names (loose style
+ * influences). Returns [] on any failure — note: in Spotify "development mode"
+ * the playlist *tracks* endpoint is restricted (403), so this degrades to the
+ * user's typed taste. It will start working automatically once the Spotify app
+ * is granted extended/production quota.
+ */
+export async function artistsFromPlaylist(
+  ref?: string | null,
+  max = 5,
+): Promise<string[]> {
+  const id = parsePlaylistId(ref);
+  if (!id) return [];
+  const token = await getToken();
+  if (!token) return [];
+  try {
+    const res = await fetch(
+      `${API}/playlists/${id}/tracks?limit=50&fields=${encodeURIComponent(
+        "items(track(artists(name)))",
+      )}`,
+      { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" },
+    );
+    if (!res.ok) {
+      console.warn("[spotify] playlist tracks HTTP", res.status);
+      return [];
+    }
+    const json = (await res.json()) as { items?: PlaylistItem[] };
+    const counts = new Map<string, number>();
+    for (const it of json.items ?? []) {
+      for (const a of it.track?.artists ?? []) {
+        if (!a?.name) continue;
+        counts.set(a.name, (counts.get(a.name) ?? 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, max)
+      .map(([name]) => name);
+  } catch {
+    return [];
+  }
+}
+
 export async function pickTrack(
   mode: EventMode,
   styleHint?: string | null,

@@ -4,7 +4,7 @@ import { useState } from "react";
 import TasteEditor from "@/components/TasteEditor";
 import type { NotifPrefs } from "@/lib/types";
 
-type Integrations = { twilio: boolean };
+type Integrations = { twilio: boolean; spotify: boolean };
 
 export default function SettingsForm({
   initial,
@@ -13,12 +13,14 @@ export default function SettingsForm({
   initial: {
     phone: string | null;
     musicTaste: string[];
+    spotifyPlaylist: string | null;
     notifPrefs: NotifPrefs;
   };
   integrations: Integrations;
 }) {
   const [phone, setPhone] = useState(initial.phone ?? "");
   const [taste, setTaste] = useState<string[]>(initial.musicTaste);
+  const [playlist, setPlaylist] = useState(initial.spotifyPlaylist ?? "");
   const [prefs, setPrefs] = useState<NotifPrefs>(initial.notifPrefs);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -30,7 +32,12 @@ export default function SettingsForm({
       await fetch("/api/user", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, musicTaste: taste, notifPrefs: prefs }),
+        body: JSON.stringify({
+          phone,
+          musicTaste: taste,
+          spotifyPlaylist: playlist,
+          notifPrefs: prefs,
+        }),
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -96,6 +103,32 @@ export default function SettingsForm({
       <section className="card">
         <span className="label">Your music taste</span>
         <TasteEditor value={taste} onChange={setTaste} />
+        <p className="mt-2 text-xs text-mist">
+          Up to 5 genres or artists. We keep the mode&rsquo;s mood (calm vs.
+          confident) but shape the generated track toward these.
+        </p>
+      </section>
+
+      <section className="card">
+        <label className="label" htmlFor="playlist">
+          Link a Spotify playlist <span className="text-mist">(optional)</span>
+        </label>
+        <input
+          id="playlist"
+          className="input"
+          type="url"
+          inputMode="url"
+          placeholder="https://open.spotify.com/playlist/…"
+          value={playlist}
+          onChange={(e) => setPlaylist(e.target.value)}
+        />
+        <p className="mt-2 text-xs text-mist">
+          We read the playlist&rsquo;s artists and steer new tracks toward that
+          style (kept to each mode&rsquo;s mood).{" "}
+          {integrations.spotify
+            ? "Note: with a Spotify app in development mode, reading playlist contents may be blocked — your music taste above is used as the fallback."
+            : "Spotify isn't connected, so your music taste above is used instead."}
+        </p>
       </section>
 
       <button onClick={save} disabled={saving} className="btn-primary">

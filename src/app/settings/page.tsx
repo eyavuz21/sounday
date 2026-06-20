@@ -22,6 +22,7 @@ export default async function SettingsPage() {
           initial={{
             phone: user.phone,
             musicTaste: parseMusicTaste(user.musicTaste),
+            spotifyPlaylist: user.spotifyPlaylist,
             notifPrefs: parseNotifPrefs(user.notifPrefs),
           }}
           integrations={cfg.integrations}
