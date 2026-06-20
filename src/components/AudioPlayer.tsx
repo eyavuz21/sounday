@@ -62,6 +62,29 @@ export default function AudioPlayer({
       : "from-sea-500 to-teal-500";
   const bar = accent === "amber" ? "bg-amber-400" : "bg-teal-500";
 
+  // Spotify tracks play through Spotify's embed iframe (no Premium/OAuth needed).
+  if (src && src.includes("open.spotify.com")) {
+    const embed = src.replace("/track/", "/embed/track/");
+    return (
+      <div className="rounded-3xl bg-gradient-to-br from-sea-800 to-sea-900 p-3 text-white shadow-soft">
+        <p className="px-2 pb-2 pt-1 text-sm font-semibold">{title}</p>
+        <iframe
+          title={title}
+          src={embed}
+          width="100%"
+          height="152"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          className="rounded-2xl"
+        />
+        {subtitle && (
+          <p className="px-2 pb-1 pt-2 text-xs text-sea-200">{subtitle}</p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-3xl bg-gradient-to-br from-sea-800 to-sea-900 p-5 text-white shadow-soft">
       <audio

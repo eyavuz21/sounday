@@ -26,6 +26,9 @@ export type GenerateArgs = {
   styleHint?: string | null; // music taste, used only as a STYLE hint
   // Prime-only: affirmation-style lyrics derived from meeting context.
   lyrics?: string | null;
+  // Pre-built acoustic style prompt (from the acoustics engine). When provided
+  // it overrides the default mood prompt.
+  prompt?: string | null;
   // Used to build a descriptive style prompt.
   contextWhat?: string | null;
   company?: string | null;
@@ -107,7 +110,7 @@ export async function generateTrack(args: GenerateArgs): Promise<SunoResult> {
     return { ...fallbackTrack(args.mode), note: "SUNO_API_KEY not set" };
   }
 
-  const style = buildStylePrompt(args);
+  const style = args.prompt?.trim() || buildStylePrompt(args);
   const instrumental = args.mode === "winddown";
 
   try {

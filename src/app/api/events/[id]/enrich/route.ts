@@ -21,8 +21,8 @@ export async function POST(
 
   // Auto-fill "What do they do?" only when empty, so we never overwrite the user.
   let contextWhat = event.contextWhat;
-  if (!contextWhat && result.summary) {
-    contextWhat = result.summary;
+  if (!contextWhat && result.description) {
+    contextWhat = result.description;
     await prisma.calendarEvent.update({
       where: { id: params.id },
       data: { contextWhat },
@@ -32,6 +32,7 @@ export async function POST(
   return NextResponse.json({
     company: result.company,
     summary: result.summary,
+    description: result.description,
     facts: result.facts,
     source: result.source,
     note: result.note ?? null,

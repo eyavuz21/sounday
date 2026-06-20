@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getOrCreateUser, parseMusicTaste } from "@/lib/data";
-import { generateTrack } from "@/lib/integrations/suno";
-import { buildPrimeLyrics } from "@/lib/integrations/lyrics";
+import { generateMusic } from "@/lib/integrations/music";
+import { buildLyrics } from "@/lib/integrations/lyrics";
 import type { EventMode } from "@/lib/types";
 
 export async function POST(
@@ -21,42 +21,38 @@ export async function POST(
   const taste = parseMusicTaste(user.musicTaste);
   const styleHint = taste.length ? taste.join(", ") : null;
 
-  // Prime mode: supportive, confidence-building lyrics from the meeting context.
-  let lyrics: string | null = null;
-  if (mode === "prime") {
-    lyrics = buildPrimeLyrics({
-      who: event.contextWho,
-      what: event.contextWhat,
-      purpose: event.contextPurpose,
-    });
-  }
+  // Prime mode: supportive, meeting-themed affirmation lyrics. Wind-down: none.
+  const lyrics = buildLyrics(mode, {
+    who: event.contextWho,
+    what: event.contextWhat,
+    purpose: event.contextPurpose,
+    company: event.company,
+  });
 
-  const result = await generateTrack({
+  // The event's day load drives the acoustic parameters (tempo/timbre/surprise…).
+  const result = await generateMusic({
     mode,
+    dayLoad: event.stressScore,
     styleHint,
     lyrics,
-    contextWhat: event.contextWhat,
-    company: event.company,
   });
 
   const updated = await prisma.calendarEvent.update({
     where: { id: params.id },
-    data: {
-      mode,
-      trackUrl: result.url,
-      lyrics: result.lyrics ?? lyrics,
-    },
+    data: { mode, trackUrl: result.trackUrl, lyrics },
   });
 
   await prisma.analyticsEvent.create({
-    data: { kind: "track_generated", meta: `${mode}:${result.source}` },
+    data: { kind: "track_generated", meta: `${mode}:${result.provider}` },
   });
 
   return NextResponse.json({
     trackUrl: updated.trackUrl,
     lyrics: updated.lyrics,
     title: result.title,
-    source: result.source,
+    provider: result.provider,
+    kind: result.kind,
+    acoustics: result.acoustics,
     note: result.note ?? null,
     styleHint,
   });

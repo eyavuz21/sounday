@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import AudioPlayer from "@/components/AudioPlayer";
+import type { Acoustics } from "@/lib/acoustics";
 import VoiceCapture from "@/components/event/VoiceCapture";
 import { reminderTimes } from "@/lib/stress";
 import { fmtTime, fmtDayLong, CADENCE_OPTIONS } from "@/lib/format";
@@ -10,7 +11,7 @@ import type { SerializedEvent } from "@/lib/data";
 import type { Cadence, EventMode } from "@/lib/types";
 
 type Integrations = {
-  suno: boolean;
+  music: string;
   cala: boolean;
   vapi: boolean;
   twilio: boolean;
@@ -39,6 +40,7 @@ export default function EventDetail({
 
   const [generating, setGenerating] = useState(false);
   const [genNote, setGenNote] = useState<string | null>(null);
+  const [acoustics, setAcoustics] = useState<Acoustics | null>(null);
   const [enriching, setEnriching] = useState(false);
   const [facts, setFacts] = useState<{ text: string; source?: string | null }[]>([]);
   const [calaNote, setCalaNote] = useState<string | null>(null);
@@ -89,10 +91,15 @@ export default function EventDetail({
       if (!res.ok) throw new Error(data.error ?? "Generation failed");
       setTrackUrl(data.trackUrl);
       setLyrics(data.lyrics);
-      const src =
-        data.source === "suno"
-          ? "Generated with Suno"
-          : "Using a sample track (Suno unavailable)";
+      setAcoustics(data.acoustics ?? null);
+      const labels: Record<string, string> = {
+        suno: "Generated with Suno",
+        elevenlabs: "Generated with ElevenLabs Music",
+        replicate: "Generated with MusicGen",
+        spotify: "Matched from Spotify",
+        sample: "Using a sample track",
+      };
+      const src = labels[data.provider] ?? "Track ready";
       const style = data.styleHint ? ` · style: ${data.styleHint}` : "";
       setGenNote(`${src}${style}`);
     } catch (e) {
@@ -310,6 +317,22 @@ export default function EventDetail({
           accent={mode === "prime" ? "amber" : "sea"}
         />
         {genNote && <p className="mt-2 text-xs text-mist">{genNote}</p>}
+        {acoustics && (
+          <div className="mt-3 rounded-2xl bg-sea-50 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-sea-500">
+              Acoustic recipe · from your day&apos;s load
+            </p>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <Metric label="Tempo" value={`${acoustics.tempoBpm}`} unit="bpm" />
+              <Metric label="Energy" value={`${Math.round(acoustics.energy * 100)}`} unit="%" />
+              <Metric label="Surprise" value={`${Math.round(acoustics.surprise * 100)}`} unit="%" />
+              <Metric label="Repetition" value={`${Math.round(acoustics.repetition * 100)}`} unit="%" />
+              <Metric label="Uncertainty" value={`${Math.round(acoustics.uncertainty * 100)}`} unit="%" />
+              <Metric label="Valence" value={`${Math.round(acoustics.valence * 100)}`} unit="%" />
+            </div>
+            <p className="mt-2 text-center text-xs text-mist">{acoustics.profile}</p>
+          </div>
+        )}
         {lyrics && mode === "prime" && (
           <details className="mt-3 rounded-2xl bg-sea-50 p-3">
             <summary className="cursor-pointer text-sm font-semibold text-sea-700">
@@ -391,10 +414,11 @@ export default function EventDetail({
       </section>
 
       <p className="mb-2 text-center text-xs text-mist">
-        Integrations:{" "}
-        {Object.entries(integrations)
-          .map(([k, v]) => `${k} ${v ? "live" : "sample"}`)
-          .join(" · ")}
+        Music: {integrations.music} · Cala{" "}
+        {integrations.cala ? "live" : "demo"} · Vapi{" "}
+        {integrations.vapi ? "live" : "demo"} · SMS{" "}
+        {integrations.twilio ? "live" : "demo"} · Pay{" "}
+        {integrations.stripe ? "live" : "demo"}
       </p>
     </main>
   );
@@ -425,6 +449,26 @@ function ModeBtn({
         {sub}
       </span>
     </button>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  unit,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+}) {
+  return (
+    <div className="rounded-xl bg-white/70 py-2">
+      <p className="text-base font-bold text-ink">
+        {value}
+        <span className="text-xs font-medium text-mist">{unit}</span>
+      </p>
+      <p className="text-[10px] uppercase tracking-wide text-mist">{label}</p>
+    </div>
   );
 }
 

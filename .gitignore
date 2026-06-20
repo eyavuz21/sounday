@@ -33,6 +33,9 @@ yarn-error.log*
 /prisma/*.db
 /prisma/*.db-journal
 
+# generated audio (created at runtime by music providers)
+/public/audio/generated/
+
 # vercel
 .vercel
 

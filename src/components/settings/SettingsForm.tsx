@@ -4,7 +4,7 @@ import { useState } from "react";
 import TasteEditor from "@/components/TasteEditor";
 import type { NotifPrefs } from "@/lib/types";
 
-type Integrations = Record<string, boolean>;
+type Integrations = { twilio: boolean };
 
 export default function SettingsForm({
   initial,
