@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  phone        String?
+  // JSON string: { sms: boolean, beforeMeeting: boolean, nightBefore: boolean, morningOf: boolean }
+  notifPrefs   String          @default("{\"sms\":true,\"beforeMeeting\":true,\"nightBefore\":true,\"morningOf\":true}")
+  // JSON string array of up to 5 genres/artists
+  musicTaste   String          @default("[]")
+  // Optional Spotify playlist URL/URI used as a style reference for generation
+  spotifyPlaylist String?
+  // Google Calendar OAuth — tokens + the connected Google account email
+  googleEmail        String?
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleTokenExpiry  DateTime?
+  onboarded    Boolean         @default(false)
+  primeUnlocked Boolean        @default(false)
+  createdAt    DateTime        @default(now())
+  events       CalendarEvent[]
+}
+
+model CalendarEvent {
+  id              String     @id @default(cuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  startDateTime   DateTime
+  durationMinutes Int        @default(30)
+  // JSON string array: [{ name, email }]
+  attendees       String     @default("[]")
+  company         String?
+  isHighStakes    Boolean    @default(false)
+  // "winddown" | "prime"
+  mode            String     @default("winddown")
+  // "once" | "standard" | "full"
+  cadence         String     @default("none")
+  stressScore     Int        @default(0)
+  contextWho      String?
+  contextWhat     String?
+  contextPurpose  String?
+  trackUrl        String?
+  lyrics          String?
+  // "seed" (demo data) | "google" (synced from Google Calendar)
+  source          String     @default("seed")
+  // Google Calendar event id (used to de-dupe on re-sync); null for seed data
+  externalId      String?
+  createdAt       DateTime   @default(now())
+  reminders       Reminder[]
+}
+
+model Reminder {
+  id        String        @id @default(cuid())
+  eventId   String
+  event     CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  sendAt    DateTime
+  label     String
+  status    String        @default("scheduled") // scheduled | sent | failed
+  createdAt DateTime      @default(now())
+}
+
+model WaitlistSignup {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  kind      String // prime_click | prime_paid | track_generated
+  meta      String?
+  createdAt DateTime @default(now())
+}
