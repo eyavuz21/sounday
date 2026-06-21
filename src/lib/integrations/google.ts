@@ -17,11 +17,19 @@ const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 const SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
 
+/**
+ * Read an OAuth credential from the environment, stripping ALL whitespace.
+ * Client IDs/secrets never contain whitespace, but values pasted into a host's
+ * env UI often pick up stray newlines from line-wrapped copy/paste — which makes
+ * Google reject the request with `invalid_client`. Removing internal whitespace
+ * (not just trimming the ends) makes the integration resilient to that.
+ */
+function cred(name: "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET"): string {
+  return (process.env[name] ?? "").replace(/\s+/g, "");
+}
+
 export function googleConfigured(): boolean {
-  return Boolean(
-    process.env.GOOGLE_CLIENT_ID?.trim() &&
-      process.env.GOOGLE_CLIENT_SECRET?.trim(),
-  );
+  return Boolean(cred("GOOGLE_CLIENT_ID") && cred("GOOGLE_CLIENT_SECRET"));
 }
 
 /** Build the origin (scheme://host) from a request, honouring proxy headers. */
@@ -44,7 +52,7 @@ export function redirectUri(req: Request): string {
 /** URL the user is sent to in order to grant Calendar read access. */
 export function authUrl(redirect: string, state?: string): string {
   const params = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID!.trim(),
+    client_id: cred("GOOGLE_CLIENT_ID"),
     redirect_uri: redirect,
     response_type: "code",
     scope: SCOPE,
@@ -80,8 +88,8 @@ export async function exchangeCode(
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       code,
-      client_id: process.env.GOOGLE_CLIENT_ID!.trim(),
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!.trim(),
+      client_id: cred("GOOGLE_CLIENT_ID"),
+      client_secret: cred("GOOGLE_CLIENT_SECRET"),
       redirect_uri: redirect,
       grant_type: "authorization_code",
     }),
@@ -111,8 +119,8 @@ export async function refreshAccessToken(
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       refresh_token: refreshToken,
-      client_id: process.env.GOOGLE_CLIENT_ID!.trim(),
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!.trim(),
+      client_id: cred("GOOGLE_CLIENT_ID"),
+      client_secret: cred("GOOGLE_CLIENT_SECRET"),
       grant_type: "refresh_token",
     }),
     cache: "no-store",
