@@ -145,7 +145,6 @@ export default function LandingPage() {
 
         {/* right edge meta */}
         <div style={{ position: "absolute", zIndex: 2, right: "26px", top: "50%", transform: "translateY(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: "80px" }}>
-          <div style={{ writingMode: "vertical-rl", fontSize: "12px", letterSpacing: "0.32em", color: "rgba(234,243,238,0.55)" }}>SUN 18:00</div>
           <div style={{ writingMode: "vertical-rl", fontSize: "12px", letterSpacing: "0.2em", color: "rgba(234,243,238,0.7)" }}>© 2026</div>
         </div>
 
