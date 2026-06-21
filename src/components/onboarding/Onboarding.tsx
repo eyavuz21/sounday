@@ -341,23 +341,15 @@ function Carousel({
     </div>
   );
 }
+const ILLUSTRATIONS = ["/onboarding/carousel-1.png", "/onboarding/carousel-2.png"];
 function Illustration({ variant }: { variant: 0 | 1 }) {
-  return variant === 0 ? (
-    <svg width="96" height="96" viewBox="0 0 92 92" fill="none">
-      <rect x="20" y="24" width="52" height="46" rx="9" fill="#fff" />
-      <rect x="20" y="24" width="52" height="13" rx="9" fill={TEAL} />
-      <circle cx="34" cy="52" r="4" fill={GREEN} />
-      <circle cx="46" cy="52" r="4" fill="#D7DAD9" />
-      <circle cx="58" cy="52" r="4" fill="#D7DAD9" />
-      <circle cx="34" cy="62" r="4" fill="#D7DAD9" />
-      <circle cx="46" cy="62" r="4" fill={TEAL} />
-    </svg>
-  ) : (
-    <svg width="96" height="96" viewBox="0 0 92 92" fill="none">
-      <path d="M30 64V34l34-6v30" stroke={INK} strokeWidth="4" fill="none" strokeLinejoin="round" />
-      <circle cx="30" cy="64" r="7" fill={TEAL} />
-      <circle cx="64" cy="58" r="7" fill={GREEN} />
-    </svg>
+  return (
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src={ILLUSTRATIONS[variant]}
+      alt=""
+      style={{ width: "100%", height: "100%", objectFit: "contain" }}
+    />
   );
 }
 
@@ -1013,12 +1005,16 @@ const styles: Record<string, React.CSSProperties> = {
   illoCircle: {
     position: "relative",
     zIndex: 1,
-    width: 255,
-    height: 248,
+    width: 252,
+    height: 252,
     borderRadius: "50%",
+    overflow: "hidden",
+    background: "rgba(255,255,255,0.55)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    padding: 10,
+    boxSizing: "border-box",
   },
   carTitle: {
     margin: "36px 0 0",
