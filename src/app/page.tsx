@@ -9,7 +9,7 @@ const STEPS = [
     n: "1",
     color: "#E8A92E",
     title: "Connect your calendar",
-    body: "Link Apple, Google, or Outlook in a tap. We read only times and titles — never the details.",
+    body: "Connect Google Calendar in a tap — Apple & Outlook coming soon. We use only your event times and titles to shape the sound.",
   },
   {
     n: "2",
@@ -20,8 +20,8 @@ const STEPS = [
   {
     n: "3",
     color: "#2AA0A0",
-    title: "A playlist for each day",
-    body: "Wake to sound that already understands the day ahead. It re-renders as your plans shift.",
+    title: "A soundtrack for each event",
+    body: "Open any event to generate a track tuned to its mood — and re-tune it whenever your plans shift.",
   },
 ];
 
@@ -180,7 +180,7 @@ export default function LandingPage() {
             </Link>
             <a href="#how" style={{ fontSize: "15px", fontWeight: 400, color: "#EAF3EE", textDecoration: "none" }}>See how it works →</a>
             <div style={{ display: "flex", alignItems: "center", gap: "11px", fontSize: "13px", fontWeight: 300, color: "rgba(234,243,238,0.6)", marginLeft: "8px" }}>
-              <span style={{ width: "24px", height: "1px", background: "rgba(234,243,238,0.3)" }} /> Apple · Google · Outlook
+              <span style={{ width: "24px", height: "1px", background: "rgba(234,243,238,0.3)" }} /> Google Calendar · Apple &amp; Outlook soon
             </div>
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function LandingPage() {
                 Hear your week before it begins
               </h2>
               <p style={{ fontSize: "17px", fontWeight: 300, color: "#9DBBAE", lineHeight: 1.62, margin: "22px 0 0", maxWidth: "460px" }}>
-                Every Sunday, Sounday renders a two-minute flyover of the days ahead — a calm signal that lets Monday land a little softer. Press play and feel the week before you live it.
+                Soon, every Sunday Sounday will render a two-minute flyover of the days ahead — a calm signal to let Monday land a little softer. (Coming soon — for now, generate a soundtrack for any event in your week.)
               </p>
               <div style={{ display: "flex", gap: "9px", marginTop: "32px", maxWidth: "400px" }}>
                 {[
@@ -320,7 +320,7 @@ export default function LandingPage() {
                 </p>
                 <EarlyAccessForm />
                 <div style={{ fontSize: "12px", fontWeight: 300, letterSpacing: "0.04em", color: "#7f9a8e", marginTop: "18px" }}>
-                  Free during the beta · No calendar details ever leave your device
+                  Free during the beta · We only use your event times &amp; titles — never shared
                 </div>
               </div>
             </div>
