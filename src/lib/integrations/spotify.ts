@@ -15,8 +15,11 @@ const TOKEN_URL = "https://accounts.spotify.com/api/token";
 const API = "https://api.spotify.com/v1";
 
 const MOOD_TERMS: Record<EventMode, string[]> = {
-  winddown: ["calm ambient", "peaceful instrumental", "relaxing chill", "soft piano calm"],
-  prime: ["hype motivation", "energetic pump up", "confident anthem", "high energy workout"],
+  intense: ["grounding focus beat", "steady driving instrumental", "confident workout"],
+  focused: ["deep focus instrumental", "study concentration", "calm focus beats"],
+  social: ["feel good upbeat", "bright happy pop", "good vibes energetic"],
+  light: ["calm ambient", "peaceful instrumental", "relaxing chill", "soft piano calm"],
+  creative: ["creative inspiring instrumental", "textured electronic", "experimental chill"],
 };
 
 export type SpotifyPick = {

@@ -39,8 +39,8 @@ model CalendarEvent {
   attendees       String     @default("[]")
   company         String?
   isHighStakes    Boolean    @default(false)
-  // "winddown" | "prime"
-  mode            String     @default("winddown")
+  // "intense" | "focused" | "social" | "light" | "creative"
+  mode            String     @default("focused")
   // "once" | "standard" | "full"
   cadence         String     @default("none")
   stressScore     Int        @default(0)

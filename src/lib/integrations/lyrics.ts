@@ -1,4 +1,5 @@
 import type { EventMode } from "../types";
+import { modeHasLyrics } from "../modes";
 
 /**
  * Build supportive, confidence-building lyrics for Prime mode from the meeting
@@ -46,7 +47,7 @@ export function buildLyrics(
   mode: EventMode,
   ctx: LyricContext,
 ): string | null {
-  if (mode !== "prime") return null;
+  if (!modeHasLyrics(mode)) return null;
   return buildPrimeLyrics(ctx);
 }
 

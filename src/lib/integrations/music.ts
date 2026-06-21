@@ -5,6 +5,7 @@ import {
   type Acoustics,
 } from "../acoustics";
 import type { EventMode, Feeling } from "../types";
+import { modeLabel } from "../modes";
 import { generateTrack as sunoGenerate, fallbackTrack } from "./suno";
 import { pickTrack, spotifyConfigured } from "./spotify";
 import { generateMusicElevenLabs, elevenLabsConfigured } from "./elevenlabs";
@@ -71,7 +72,7 @@ export async function generateMusic(args: {
         provider: "elevenlabs",
         kind: "audio",
         trackUrl: r.url,
-        title: mode === "prime" ? "Prime (ElevenLabs)" : "Wind-down (ElevenLabs)",
+        title: `${modeLabel(mode)} (ElevenLabs)`,
         acoustics,
       };
     }
@@ -85,7 +86,7 @@ export async function generateMusic(args: {
         provider: "replicate",
         kind: "audio",
         trackUrl: r.url,
-        title: mode === "prime" ? "Prime (MusicGen)" : "Wind-down (MusicGen)",
+        title: `${modeLabel(mode)} (MusicGen)`,
         acoustics,
       };
     }

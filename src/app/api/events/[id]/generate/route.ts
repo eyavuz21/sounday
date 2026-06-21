@@ -4,6 +4,7 @@ import { getOrCreateUser, parseFeeling, parseMusicTaste } from "@/lib/data";
 import { generateMusic } from "@/lib/integrations/music";
 import { artistsFromPlaylist } from "@/lib/integrations/spotify";
 import { buildLyrics } from "@/lib/integrations/lyrics";
+import { isEventMode } from "@/lib/modes";
 import type { EventMode, Feeling } from "@/lib/types";
 
 function feelingFromBody(v: unknown): Feeling | null {
@@ -31,7 +32,12 @@ export async function POST(
   if (!event) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const body = await req.json().catch(() => ({}));
-  const mode: EventMode = (body.mode as EventMode) ?? (event.mode as EventMode);
+  const mode: EventMode =
+    typeof body.mode === "string" && isEventMode(body.mode)
+      ? body.mode
+      : isEventMode(event.mode)
+        ? event.mode
+        : "focused";
   // Calibrate to how the user feels: prefer a fresh reading from the request,
   // else fall back to the mood saved on the event.
   const feeling =

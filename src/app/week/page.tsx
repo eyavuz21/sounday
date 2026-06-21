@@ -3,6 +3,7 @@ import BottomNav from "@/components/BottomNav";
 import StressCurve, { type CurvePoint } from "@/components/week/StressCurve";
 import { getOrCreateUser, getWeekEvents, type SerializedEvent } from "@/lib/data";
 import { computeDayLoad, suggestDayMode } from "@/lib/stress";
+import { modeConfig } from "@/lib/modes";
 import { fmtTime, loadLabel } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -99,7 +100,7 @@ export default async function WeekPage({
                       {d.load.score >= 60 && (
                         <span className="text-mist">
                           {" "}
-                          · suggests {suggested === "winddown" ? "wind-down" : "prime"}
+                          · suggests {modeConfig(suggested).label}
                         </span>
                       )}
                     </p>
@@ -141,12 +142,12 @@ function EventRow({ e }: { e: SerializedEvent }) {
           )}
           <span
             className={`badge ${
-              e.mode === "prime"
+              modeConfig(e.mode).accent === "amber"
                 ? "bg-amber-100 text-amber-700"
                 : "bg-sea-100 text-sea-700"
             }`}
           >
-            {e.mode === "prime" ? "Prime" : "Wind-down"}
+            {modeConfig(e.mode).label}
           </span>
           {e.company && (
             <span className="badge bg-teal-400/10 text-teal-600">

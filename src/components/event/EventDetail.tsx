@@ -9,6 +9,7 @@ import MoodCheck from "@/components/event/MoodCheck";
 import { reminderTimes } from "@/lib/stress";
 import { fmtTime, fmtDayLong, CADENCE_OPTIONS } from "@/lib/format";
 import { feelingShift } from "@/lib/feeling";
+import { MODE_LIST, modeConfig, modeHasLyrics, modeLabel } from "@/lib/modes";
 import type { SerializedEvent } from "@/lib/data";
 import type { Cadence, EventMode, Feeling } from "@/lib/types";
 
@@ -216,18 +217,16 @@ export default function EventDetail({
       <section className="card mb-4">
         <span className="label">Soundtrack mode</span>
         <div className="grid grid-cols-2 gap-2">
-          <ModeBtn
-            active={mode === "winddown"}
-            onClick={() => changeMode("winddown")}
-            title="Wind-down"
-            sub="Calm, low energy"
-          />
-          <ModeBtn
-            active={mode === "prime"}
-            onClick={() => changeMode("prime")}
-            title="Prime"
-            sub="Confident, hype"
-          />
+          {MODE_LIST.map((m) => (
+            <ModeBtn
+              key={m.mode}
+              active={mode === m.mode}
+              onClick={() => changeMode(m.mode)}
+              title={m.label}
+              sub={m.sub}
+              dotColor={m.dotColor}
+            />
+          ))}
         </div>
       </section>
 
@@ -326,7 +325,7 @@ export default function EventDetail({
         <MoodCheck
           value={moodBefore}
           onChange={saveMoodBefore}
-          accent={mode === "prime" ? "amber" : "sea"}
+          accent={modeConfig(mode).accent}
         />
       </section>
 
@@ -341,9 +340,9 @@ export default function EventDetail({
         </button>
         <AudioPlayer
           src={trackUrl}
-          title={mode === "prime" ? "Prime — hype track" : "Wind-down — calm track"}
+          title={`${modeLabel(mode)} — ${modeConfig(mode).sub.toLowerCase()}`}
           subtitle={event.title}
-          accent={mode === "prime" ? "amber" : "sea"}
+          accent={modeConfig(mode).accent}
           onEnded={() => setShowAfter(true)}
         />
         {genNote && <p className="mt-2 text-xs text-mist">{genNote}</p>}
@@ -368,7 +367,7 @@ export default function EventDetail({
             )}
           </div>
         )}
-        {lyrics && mode === "prime" && (
+        {lyrics && modeHasLyrics(mode) && (
           <details className="mt-3 rounded-2xl bg-sea-50 p-3">
             <summary className="cursor-pointer text-sm font-semibold text-sea-700">
               Affirmation lyrics
@@ -399,7 +398,7 @@ export default function EventDetail({
               <MoodCheck
                 value={moodAfter}
                 onChange={saveMoodAfter}
-                accent={mode === "prime" ? "amber" : "sea"}
+                accent={modeConfig(mode).accent}
               />
               {moodBefore && moodAfter && (
                 <MoodShift before={moodBefore} after={moodAfter} />
@@ -531,11 +530,13 @@ function ModeBtn({
   onClick,
   title,
   sub,
+  dotColor,
 }: {
   active: boolean;
   onClick: () => void;
   title: string;
   sub: string;
+  dotColor: string;
 }) {
   return (
     <button
@@ -546,8 +547,14 @@ function ModeBtn({
           : "bg-white/70 text-ink ring-1 ring-sea-200"
       }`}
     >
-      <span className="block font-semibold">{title}</span>
-      <span className={`block text-xs ${active ? "text-sea-100" : "text-mist"}`}>
+      <span className="flex items-center gap-1.5 font-semibold">
+        <span
+          className="inline-block h-2 w-2 rounded-full"
+          style={{ backgroundColor: active ? "currentColor" : dotColor }}
+        />
+        {title}
+      </span>
+      <span className={`mt-0.5 block text-xs ${active ? "text-sea-100" : "text-mist"}`}>
         {sub}
       </span>
     </button>

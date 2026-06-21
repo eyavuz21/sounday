@@ -6,6 +6,7 @@ import type {
   Feeling,
   NotifPrefs,
 } from "./types";
+import { isEventMode } from "./modes";
 
 export const DEMO_EMAIL = "emre@sounday.app";
 
@@ -89,7 +90,7 @@ export function serializeEvent(e: RawEvent): SerializedEvent {
     attendees: parseAttendees(e.attendees),
     company: e.company,
     isHighStakes: e.isHighStakes,
-    mode: (e.mode as EventMode) ?? "winddown",
+    mode: isEventMode(e.mode) ? e.mode : "focused",
     cadence: (e.cadence as Cadence) ?? "none",
     stressScore: e.stressScore,
     contextWho: e.contextWho,

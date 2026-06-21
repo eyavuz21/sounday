@@ -1,4 +1,5 @@
 import type { EventMode } from "../types";
+import { modePolarity, modeHasLyrics, modeLabel } from "../modes";
 
 /**
  * Suno music generation.
@@ -37,11 +38,11 @@ export type GenerateArgs = {
 export function fallbackTrack(mode: EventMode): SunoResult {
   return {
     url:
-      mode === "prime"
+      modePolarity(mode) === "lift"
         ? "/audio/prime-sample.wav"
         : "/audio/winddown-sample.wav",
     lyrics: null,
-    title: mode === "prime" ? "Prime (sample)" : "Wind-down (sample)",
+    title: `${modeLabel(mode)} (sample)`,
     source: "fallback",
   };
 }
@@ -49,9 +50,9 @@ export function fallbackTrack(mode: EventMode): SunoResult {
 /** Build a style prompt that always respects the mode's mood. */
 export function buildStylePrompt(args: GenerateArgs): string {
   const taste = (args.styleHint ?? "").trim();
-  if (args.mode === "prime") {
+  if (modePolarity(args.mode) === "lift") {
     const base =
-      "confident, uplifting, higher-energy hype track, driving beat, anthemic, motivational";
+      "confident, uplifting, higher-energy track, driving beat, motivational";
     return taste
       ? `${base}; inspired by the genres/influences: ${taste} (use as loose influence only, prefer genres over copying specific artists)`
       : base;
@@ -111,7 +112,7 @@ export async function generateTrack(args: GenerateArgs): Promise<SunoResult> {
   }
 
   const style = args.prompt?.trim() || buildStylePrompt(args);
-  const instrumental = args.mode === "winddown";
+  const instrumental = !modeHasLyrics(args.mode);
 
   try {
     const res = await fetch(`${SUNO_API_BASE}/api/v1/generate`, {
@@ -125,7 +126,7 @@ export async function generateTrack(args: GenerateArgs): Promise<SunoResult> {
         instrumental,
         model: "V4",
         style,
-        title: args.mode === "prime" ? "Prime Up" : "Wind Down",
+        title: modeLabel(args.mode),
         prompt: instrumental ? "" : (args.lyrics ?? ""),
         callBackUrl: process.env.SUNO_CALLBACK_URL ?? "https://example.com/cb",
       }),

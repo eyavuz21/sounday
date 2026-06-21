@@ -1,4 +1,5 @@
 import type { Attendee, Cadence, EventMode, Mood } from "./types";
+import { modePolarity } from "./modes";
 
 export const PRESSURE_KEYWORDS = [
   "deadline",
@@ -115,9 +116,9 @@ export function computeDayLoad(events: StressableEvent[]): StressBreakdown {
   };
 }
 
-/** Day-level suggestion: high load -> wind down. */
+/** Day-level suggestion: heavy days lean into spacious recovery, lighter days social. */
 export function suggestDayMode(score: number): EventMode {
-  return score >= 60 ? "winddown" : "prime";
+  return score >= 60 ? "light" : "social";
 }
 
 /** Map a load score to musical mood parameters (calming as load rises). */
@@ -133,10 +134,10 @@ export function moodFromScore(score: number): Mood {
 
 /** Mood targets per generation mode (always respected, taste is only a hint). */
 export function moodForMode(mode: EventMode): Mood {
-  if (mode === "prime") {
-    return { energy: 0.85, valence: 0.8, label: "confident" };
+  if (modePolarity(mode) === "lift") {
+    return { energy: 0.82, valence: 0.8, label: "energised" };
   }
-  return { energy: 0.22, valence: 0.55, label: "calm" };
+  return { energy: 0.28, valence: 0.55, label: "calm" };
 }
 
 export type HighStakesInput = {
@@ -189,8 +190,8 @@ export function defaultsForEvent(isHighStakes: boolean): {
   cadence: Cadence;
 } {
   return isHighStakes
-    ? { mode: "prime", cadence: "full" }
-    : { mode: "winddown", cadence: "none" };
+    ? { mode: "intense", cadence: "full" }
+    : { mode: "focused", cadence: "none" };
 }
 
 /** Compute reminder send-times for a cadence relative to event start. */

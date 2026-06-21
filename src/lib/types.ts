@@ -1,6 +1,11 @@
 export type Attendee = { name: string; email: string };
 
-export type EventMode = "winddown" | "prime";
+export type EventMode =
+  | "intense"
+  | "focused"
+  | "social"
+  | "light"
+  | "creative";
 export type Cadence = "none" | "once" | "standard" | "full";
 
 export type NotifPrefs = {
