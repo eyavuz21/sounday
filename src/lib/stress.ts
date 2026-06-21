@@ -121,6 +121,52 @@ export function suggestDayMode(score: number): EventMode {
   return score >= 60 ? "light" : "social";
 }
 
+export type EventLoadInput = {
+  title: string;
+  durationMinutes: number;
+  attendees: Attendee[];
+  isHighStakes: boolean;
+  contextPurpose?: string | null;
+  company?: string | null;
+  startDateTime: Date;
+};
+
+/**
+ * Per-event intensity (0-100): how demanding THIS specific meeting is, on its
+ * own, regardless of the rest of the day. Lets two events on the same day sound
+ * different (a 9am 1:1 vs a 2pm board pitch). Inputs: duration, the high-stakes
+ * flag, external attendees, high-stakes keywords, and an early/evening slot.
+ */
+export function computeEventLoad(ev: EventLoadInput, userEmail: string): number {
+  let score = 0;
+  score += Math.min((ev.durationMinutes / 120) * 28, 28); // up to 28 at ~2h+
+  if (ev.isHighStakes) score += 30;
+
+  const userDomain = emailDomain(userEmail);
+  const external = ev.attendees.filter(
+    (a) => a.email && emailDomain(a.email) && emailDomain(a.email) !== userDomain,
+  ).length;
+  score += Math.min(external * 12, 24);
+
+  const hay = `${ev.title} ${ev.contextPurpose ?? ""} ${ev.company ?? ""}`.toLowerCase();
+  const hits = HIGH_STAKES_KEYWORDS.filter((kw) => hay.includes(kw)).length;
+  score += Math.min(hits * 8, 18);
+
+  const h = ev.startDateTime.getHours();
+  if (h < 9 || h >= 18) score += 8;
+
+  return Math.round(clamp(score));
+}
+
+/**
+ * Blend the day's overall load with this event's own intensity into the single
+ * 0-100 figure the acoustic engine consumes, so the track reflects both the
+ * shape of the day and the specific meeting.
+ */
+export function blendedLoad(dayLoad: number, eventLoad: number): number {
+  return Math.round(clamp(dayLoad * 0.55 + eventLoad * 0.45));
+}
+
 /** Map a load score to musical mood parameters (calming as load rises). */
 export function moodFromScore(score: number): Mood {
   const energy = Math.round((0.55 - (score / 100) * 0.35) * 100) / 100; // higher load -> calmer

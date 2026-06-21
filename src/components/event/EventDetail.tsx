@@ -61,6 +61,19 @@ export default function EventDetail({
     [start, cadence],
   );
 
+  // Lyric modes name the meeting in the affirmation — nudge for context when
+  // the purpose is missing so the words aren't generic. Never blocks generation.
+  const needsContext =
+    modeHasLyrics(mode) && !purpose.trim() && !who.trim() && !event.company;
+
+  function focusPurpose() {
+    const el = document.getElementById("purpose-field");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el as HTMLTextAreaElement).focus();
+    }
+  }
+
   async function patch(partial: Record<string, unknown>) {
     try {
       const res = await fetch(`/api/events/${event.id}`, {
@@ -262,6 +275,7 @@ export default function EventDetail({
             textarea
           />
           <Field
+            id="purpose-field"
             label="What's the purpose?"
             value={purpose}
             onChange={setPurpose}
@@ -331,6 +345,24 @@ export default function EventDetail({
 
       {/* Generate + player */}
       <section className="card mb-4">
+        {needsContext && (
+          <div className="mb-4 rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-200">
+            <p className="text-sm font-medium text-amber-800">
+              Tell me a bit more so the affirmation fits this meeting
+            </p>
+            <p className="mt-1 text-xs text-amber-700">
+              {modeLabel(mode)} sings lyrics. Add the purpose (and who it&apos;s
+              with) and they&apos;ll name what you&apos;re walking into — otherwise
+              the words stay generic. You can still generate without it.
+            </p>
+            <button
+              onClick={focusPurpose}
+              className="mt-2 text-xs font-semibold text-amber-800 underline"
+            >
+              Add details
+            </button>
+          </div>
+        )}
         <button
           onClick={() => generate()}
           disabled={generating}
@@ -349,7 +381,7 @@ export default function EventDetail({
         {acoustics && (
           <div className="mt-3 rounded-2xl bg-sea-50 p-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-sea-500">
-              Acoustic recipe · from your day&apos;s load
+              Acoustic recipe · from your day + this meeting
             </p>
             <div className="grid grid-cols-3 gap-2 text-center">
               <Metric label="Tempo" value={`${acoustics.tempoBpm}`} unit="bpm" />
@@ -588,6 +620,7 @@ function Field({
   onBlur,
   placeholder,
   textarea,
+  id,
 }: {
   label: string;
   value: string;
@@ -595,12 +628,14 @@ function Field({
   onBlur: () => void;
   placeholder?: string;
   textarea?: boolean;
+  id?: string;
 }) {
   return (
     <div>
       <label className="label">{label}</label>
       {textarea ? (
         <textarea
+          id={id}
           className="input min-h-[64px] resize-none"
           value={value}
           placeholder={placeholder}
@@ -609,6 +644,7 @@ function Field({
         />
       ) : (
         <input
+          id={id}
           className="input"
           value={value}
           placeholder={placeholder}
