@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TasteEditor from "@/components/TasteEditor";
 import type { NotifPrefs } from "@/lib/types";
 
@@ -27,6 +27,19 @@ export default function SettingsForm({
   const [saved, setSaved] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const [googleStatus, setGoogleStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get("google");
+    if (!status) return;
+    if (status === "connected") setGoogleStatus("Google Calendar connected.");
+    else if (status === "denied")
+      setGoogleStatus("Connection cancelled — you didn't grant access.");
+    else if (status === "error")
+      setGoogleStatus("Couldn't connect to Google. Please try again.");
+    window.history.replaceState(null, "", window.location.pathname);
+  }, []);
 
   async function syncGoogle() {
     setSyncing(true);
@@ -189,9 +202,19 @@ export default function SettingsForm({
               Connect your Google account to auto-import your schedule — no CSV
               upload. We request read-only access to your calendar.
             </p>
-            <a href="/api/google/connect" className="btn-primary text-center">
-              Connect Google Calendar
+            <a
+              href="/api/google/connect"
+              onClick={() => setConnecting(true)}
+              aria-disabled={connecting}
+              className={`btn-primary text-center ${
+                connecting ? "pointer-events-none opacity-70" : ""
+              }`}
+            >
+              {connecting ? "Connecting…" : "Connect Google Calendar"}
             </a>
+            {googleStatus && (
+              <p className="text-xs text-mist">{googleStatus}</p>
+            )}
           </div>
         ) : (
           <p className="mt-1 text-sm text-mist">

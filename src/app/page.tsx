@@ -1,5 +1,7 @@
 import Link from "next/link";
 import EarlyAccessForm from "@/components/landing/EarlyAccessForm";
+import ConnectCalendarButton from "@/components/landing/ConnectCalendarButton";
+import { publicConfig } from "@/lib/config";
 
 const serif = "var(--font-newsreader), Georgia, serif";
 const sans = "var(--font-inter), system-ui, sans-serif";
@@ -69,6 +71,7 @@ const MOODS = [
 ];
 
 export default function LandingPage() {
+  const { integrations } = publicConfig();
   return (
     <div
       className="landing"
@@ -174,9 +177,7 @@ export default function LandingPage() {
           </p>
 
           <div style={{ display: "flex", alignItems: "center", gap: "22px", flexWrap: "wrap", marginTop: "36px" }}>
-            <Link href="/week" style={{ fontSize: "15px", fontWeight: 500, color: "#08251c", textDecoration: "none", background: "#EAF3EE", padding: "16px 30px", borderRadius: "9999px" }}>
-              Connect your calendar
-            </Link>
+            <ConnectCalendarButton googleConfigured={integrations.google} />
             <a href="#how" style={{ fontSize: "15px", fontWeight: 400, color: "#EAF3EE", textDecoration: "none" }}>See how it works →</a>
             <div style={{ display: "flex", alignItems: "center", gap: "11px", fontSize: "13px", fontWeight: 300, color: "rgba(234,243,238,0.6)", marginLeft: "8px" }}>
               <span style={{ width: "24px", height: "1px", background: "rgba(234,243,238,0.3)" }} /> Google Calendar · Apple &amp; Outlook soon
