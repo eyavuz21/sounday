@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Newsreader, Instrument_Serif, Nunito } from "next/font/google";
+import {
+  Inter,
+  Newsreader,
+  Instrument_Serif,
+  Nunito,
+  Nunito_Sans,
+} from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -15,6 +21,10 @@ const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
 });
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito" });
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
+  variable: "--font-nunito-sans",
+});
 
 export const metadata: Metadata = {
   title: "Sounday — Your calendar, turned into a personal soundtrack",
@@ -37,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${newsreader.variable} ${instrumentSerif.variable} ${nunito.variable} font-sans antialiased`}
+        className={`${inter.variable} ${newsreader.variable} ${instrumentSerif.variable} ${nunito.variable} ${nunitoSans.variable} font-sans antialiased`}
       >
         {children}
       </body>
