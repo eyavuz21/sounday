@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getOrCreateUser, parseFeeling, parseMusicTaste } from "@/lib/data";
+import {
+  getOrCreateUser,
+  parseFeeling,
+  parseMusicTaste,
+  parseAttendees,
+} from "@/lib/data";
+import { computeEventLoad, blendedLoad } from "@/lib/stress";
 import { generateMusic } from "@/lib/integrations/music";
 import { artistsFromPlaylist } from "@/lib/integrations/spotify";
 import { buildLyrics } from "@/lib/integrations/lyrics";
@@ -60,10 +66,25 @@ export async function POST(
     company: event.company,
   });
 
-  // The event's day load drives the acoustic parameters (tempo/timbre/surprise…).
+  // Blend the day's load with this event's own intensity so the acoustics
+  // (tempo/timbre/surprise…) reflect both the day and this specific meeting.
+  const eventLoad = computeEventLoad(
+    {
+      title: event.title,
+      durationMinutes: event.durationMinutes,
+      attendees: parseAttendees(event.attendees),
+      isHighStakes: event.isHighStakes,
+      contextPurpose: event.contextPurpose,
+      company: event.company,
+      startDateTime: event.startDateTime,
+    },
+    user.email,
+  );
+  const effectiveLoad = blendedLoad(event.stressScore, eventLoad);
+
   const result = await generateMusic({
     mode,
-    dayLoad: event.stressScore,
+    dayLoad: effectiveLoad,
     styleHint,
     lyrics,
     feeling,
