@@ -306,11 +306,9 @@ function Carousel({
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </div>
-        {page === 0 && (
-          <div onClick={onSkip} className="sd-press" style={styles.carSkip}>
-            Skip
-          </div>
-        )}
+        <div onClick={onSkip} className="sd-press" style={styles.carSkip}>
+          Skip
+        </div>
       </div>
 
       <div style={{ ...styles.carTrack, transform: `translateX(${-page * 402}px)` }}>
