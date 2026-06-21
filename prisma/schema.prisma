@@ -49,6 +49,10 @@ model CalendarEvent {
   contextPurpose  String?
   trackUrl        String?
   lyrics          String?
+  // JSON string: { ready, calm, confident } each 1-3, captured before generating
+  moodBefore      String?
+  // JSON string: { ready, calm, confident } each 1-3, captured after the track plays
+  moodAfter       String?
   // "seed" (demo data) | "google" (synced from Google Calendar)
   source          String     @default("seed")
   // Google Calendar event id (used to de-dupe on re-sync); null for seed data

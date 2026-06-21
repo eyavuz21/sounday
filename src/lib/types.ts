@@ -27,3 +27,10 @@ export type Mood = {
   valence: number;
   label: string;
 };
+
+/** Pre/post check-in: how ready, calm and confident the user feels (each 1-3). */
+export type Feeling = {
+  ready: number;
+  calm: number;
+  confident: number;
+};

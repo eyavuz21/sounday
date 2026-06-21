@@ -1,4 +1,4 @@
-import type { EventMode } from "./types";
+import type { EventMode, Feeling } from "./types";
 
 /**
  * Acoustic parameter engine.
@@ -21,6 +21,7 @@ export type Acoustics = {
   uncertainty: number; // 0-1 (harmonic/entropic ambiguity)
   timbre: string; // descriptor
   profile: string; // human-readable Cheung quadrant
+  calibration?: string | null; // how the user's check-in nudged the recipe
 };
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
@@ -81,6 +82,88 @@ export function acousticsFor(mode: EventMode, dayLoad: number): Acoustics {
     timbre: "bright, punchy drums, driving bass, uplifting synth/brass",
     profile: cheungProfile(surprise, uncertainty),
   };
+}
+
+/** 1-3 chip value → 0..1 "need for help" (1 = lowest/most help, 3 = none). */
+const need = (v: number) => clamp01((3 - v) / 2);
+
+/**
+ * Calibrate the day-load recipe by how the user actually feels right now.
+ *
+ * The check-in (ready / calm / confident, each 1-3) shifts the acoustics toward
+ * what the person needs: someone who feels unsure/on-edge before a Prime track
+ * gets a more grounding, steady, energising lift; someone already calm &
+ * confident gets a lighter touch. Wind-down leans harder into soothing when the
+ * user is on edge. Returns a new Acoustics with a human-readable `calibration`.
+ */
+export function calibrateAcoustics(
+  base: Acoustics,
+  mode: EventMode,
+  feeling: Feeling | null | undefined,
+): Acoustics {
+  if (!feeling) return base;
+
+  const nReady = need(feeling.ready);
+  const nCalm = need(feeling.calm);
+  const nConf = need(feeling.confident);
+
+  if (mode === "prime") {
+    // Confidence-weighted: the less confident/ready, the bolder the priming.
+    const drive = nConf * 0.5 + nReady * 0.3 + nCalm * 0.2;
+    const out: Acoustics = {
+      ...base,
+      tempoBpm: Math.round(base.tempoBpm + drive * 5),
+      energy: round2(clamp01(base.energy + drive * 0.12)),
+      valence: round2(clamp01(base.valence + drive * 0.08)),
+      repetition: round2(clamp01(base.repetition + drive * 0.14)), // steadier groove
+      surprise: round2(clamp01(base.surprise - drive * 0.12)), // fewer jolts
+      uncertainty: round2(clamp01(base.uncertainty - drive * 0.06)), // clearer
+    };
+    out.profile = cheungProfile(out.surprise, out.uncertainty);
+    out.calibration = calibrationNote(mode, feeling, drive);
+    return out;
+  }
+
+  // wind-down: calm-weighted soothing.
+  const settle = nCalm * 0.5 + nReady * 0.3 + nConf * 0.2;
+  const out: Acoustics = {
+    ...base,
+    tempoBpm: Math.round(base.tempoBpm - settle * 8),
+    energy: round2(clamp01(base.energy - settle * 0.1)),
+    valence: round2(clamp01(base.valence + settle * 0.04)),
+    repetition: round2(clamp01(base.repetition + settle * 0.15)),
+    surprise: round2(clamp01(base.surprise - settle * 0.1)),
+    uncertainty: round2(clamp01(base.uncertainty + settle * 0.05)),
+  };
+  out.profile = cheungProfile(out.surprise, out.uncertainty);
+  out.calibration = calibrationNote(mode, feeling, settle);
+  return out;
+}
+
+function lowest(feeling: Feeling): string {
+  const entries: [string, number][] = [
+    ["less ready", feeling.ready],
+    ["on edge", feeling.calm],
+    ["unsure", feeling.confident],
+  ];
+  entries.sort((a, b) => a[1] - b[1]);
+  return entries[0][0];
+}
+
+function calibrationNote(
+  mode: EventMode,
+  feeling: Feeling,
+  intensity: number,
+): string {
+  if (intensity < 0.17) {
+    return mode === "prime"
+      ? "you feel ready — a lighter, celebratory lift"
+      : "you feel calm — a gentle, present wind-down";
+  }
+  const focus = lowest(feeling);
+  return mode === "prime"
+    ? `tuned for feeling ${focus} — steadier, grounding & more energising`
+    : `tuned for feeling ${focus} — slower, softer & more soothing`;
 }
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;

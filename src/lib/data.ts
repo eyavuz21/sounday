@@ -1,5 +1,11 @@
 import { prisma } from "./db";
-import type { Attendee, Cadence, EventMode, NotifPrefs } from "./types";
+import type {
+  Attendee,
+  Cadence,
+  EventMode,
+  Feeling,
+  NotifPrefs,
+} from "./types";
 
 export const DEMO_EMAIL = "emre@sounday.app";
 
@@ -27,6 +33,8 @@ export type SerializedEvent = {
   contextPurpose: string | null;
   trackUrl: string | null;
   lyrics: string | null;
+  moodBefore: Feeling | null;
+  moodAfter: Feeling | null;
 };
 
 type RawEvent = {
@@ -45,7 +53,23 @@ type RawEvent = {
   contextPurpose: string | null;
   trackUrl: string | null;
   lyrics: string | null;
+  moodBefore: string | null;
+  moodAfter: string | null;
 };
+
+export function parseFeeling(json: string | null): Feeling | null {
+  if (!json) return null;
+  try {
+    const v = JSON.parse(json);
+    const ok = (n: unknown) => typeof n === "number" && n >= 1 && n <= 3;
+    if (ok(v?.ready) && ok(v?.calm) && ok(v?.confident)) {
+      return { ready: v.ready, calm: v.calm, confident: v.confident };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export function parseAttendees(json: string): Attendee[] {
   try {
@@ -73,6 +97,8 @@ export function serializeEvent(e: RawEvent): SerializedEvent {
     contextPurpose: e.contextPurpose,
     trackUrl: e.trackUrl,
     lyrics: e.lyrics,
+    moodBefore: parseFeeling(e.moodBefore),
+    moodAfter: parseFeeling(e.moodAfter),
   };
 }
 

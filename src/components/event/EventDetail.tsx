@@ -5,10 +5,12 @@ import Link from "next/link";
 import AudioPlayer from "@/components/AudioPlayer";
 import type { Acoustics } from "@/lib/acoustics";
 import VoiceCapture from "@/components/event/VoiceCapture";
+import MoodCheck from "@/components/event/MoodCheck";
 import { reminderTimes } from "@/lib/stress";
 import { fmtTime, fmtDayLong, CADENCE_OPTIONS } from "@/lib/format";
+import { feelingShift } from "@/lib/feeling";
 import type { SerializedEvent } from "@/lib/data";
-import type { Cadence, EventMode } from "@/lib/types";
+import type { Cadence, EventMode, Feeling } from "@/lib/types";
 
 type Integrations = {
   music: string;
@@ -37,6 +39,11 @@ export default function EventDetail({
   const [trackUrl, setTrackUrl] = useState<string | null>(event.trackUrl);
   const [lyrics, setLyrics] = useState<string | null>(event.lyrics);
   const [highStakes, setHighStakes] = useState(event.isHighStakes);
+
+  const [moodBefore, setMoodBefore] = useState<Feeling | null>(event.moodBefore);
+  const [moodAfter, setMoodAfter] = useState<Feeling | null>(event.moodAfter);
+  // Reveal the after check-in once a track has finished (or one was already saved).
+  const [showAfter, setShowAfter] = useState<boolean>(Boolean(event.moodAfter));
 
   const [generating, setGenerating] = useState(false);
   const [genNote, setGenNote] = useState<string | null>(null);
@@ -77,7 +84,16 @@ export default function EventDetail({
     void patch({ cadence: next });
   }
 
-  async function generate() {
+  function saveMoodBefore(next: Feeling) {
+    setMoodBefore(next);
+    void patch({ moodBefore: next });
+  }
+  function saveMoodAfter(next: Feeling) {
+    setMoodAfter(next);
+    void patch({ moodAfter: next });
+  }
+
+  async function generate(feeling: Feeling | null = moodBefore) {
     setGenerating(true);
     setGenNote(null);
     try {
@@ -85,7 +101,7 @@ export default function EventDetail({
       const res = await fetch(`/api/events/${event.id}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode }),
+        body: JSON.stringify({ mode, feeling }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Generation failed");
@@ -301,10 +317,23 @@ export default function EventDetail({
         {calaNote && <p className="mt-2 text-xs text-mist">{calaNote}</p>}
       </section>
 
+      {/* Before check-in — feeds the generation */}
+      <section className="card mb-4">
+        <span className="label">How do you feel about this right now?</span>
+        <p className="mb-3 -mt-1 text-sm text-mist">
+          Your track is tuned to match — skip if you&apos;d rather not.
+        </p>
+        <MoodCheck
+          value={moodBefore}
+          onChange={saveMoodBefore}
+          accent={mode === "prime" ? "amber" : "sea"}
+        />
+      </section>
+
       {/* Generate + player */}
       <section className="card mb-4">
         <button
-          onClick={generate}
+          onClick={() => generate()}
           disabled={generating}
           className="btn-primary mb-4 w-full"
         >
@@ -315,6 +344,7 @@ export default function EventDetail({
           title={mode === "prime" ? "Prime — hype track" : "Wind-down — calm track"}
           subtitle={event.title}
           accent={mode === "prime" ? "amber" : "sea"}
+          onEnded={() => setShowAfter(true)}
         />
         {genNote && <p className="mt-2 text-xs text-mist">{genNote}</p>}
         {acoustics && (
@@ -331,6 +361,11 @@ export default function EventDetail({
               <Metric label="Valence" value={`${Math.round(acoustics.valence * 100)}`} unit="%" />
             </div>
             <p className="mt-2 text-center text-xs text-mist">{acoustics.profile}</p>
+            {acoustics.calibration && (
+              <p className="mt-1.5 text-center text-xs font-medium text-teal-600">
+                ♪ {acoustics.calibration}
+              </p>
+            )}
           </div>
         )}
         {lyrics && mode === "prime" && (
@@ -344,6 +379,46 @@ export default function EventDetail({
           </details>
         )}
       </section>
+
+      {/* After check-in — measures the shift, can re-tune */}
+      {trackUrl && (
+        <section className="card mb-4">
+          {!showAfter ? (
+            <button
+              onClick={() => setShowAfter(true)}
+              className="btn-ghost w-full"
+            >
+              I&apos;ve listened — how do you feel now?
+            </button>
+          ) : (
+            <>
+              <span className="label">And now — how do you feel?</span>
+              <p className="mb-3 -mt-1 text-sm text-mist">
+                After listening to your track.
+              </p>
+              <MoodCheck
+                value={moodAfter}
+                onChange={saveMoodAfter}
+                accent={mode === "prime" ? "amber" : "sea"}
+              />
+              {moodBefore && moodAfter && (
+                <MoodShift before={moodBefore} after={moodAfter} />
+              )}
+              {moodAfter && (
+                <button
+                  onClick={() => generate(moodAfter)}
+                  disabled={generating}
+                  className="btn-ghost mt-3 w-full"
+                >
+                  {generating
+                    ? "Re-tuning…"
+                    : "Re-tune the track to how you feel now"}
+                </button>
+              )}
+            </>
+          )}
+        </section>
+      )}
 
       {/* Prep cadence */}
       <section className="card mb-4">
@@ -421,6 +496,33 @@ export default function EventDetail({
         {integrations.stripe ? "live" : "demo"}
       </p>
     </main>
+  );
+}
+
+function MoodShift({ before, after }: { before: Feeling; after: Feeling }) {
+  const shift = feelingShift(before, after);
+  const up = shift.delta > 0;
+  const flat = shift.delta === 0;
+  const tone = up
+    ? "bg-teal-400/10 text-teal-700"
+    : flat
+      ? "bg-sea-50 text-sea-700"
+      : "bg-amber-400/10 text-amber-700";
+  const sign = up ? `+${shift.delta}` : `${shift.delta}`;
+  return (
+    <div className={`mt-3 rounded-2xl p-3 text-center text-sm ${tone}`}>
+      <span className="font-semibold capitalize">{shift.from}</span>
+      <span className="mx-2">→</span>
+      <span className="font-semibold capitalize">{shift.to}</span>
+      {!flat && <span className="ml-2 text-xs">({sign})</span>}
+      <p className="mt-1 text-xs opacity-80">
+        {up
+          ? "Nice — the track moved you in the right direction."
+          : flat
+            ? "No change yet — try re-tuning below."
+            : "Still tense — re-tune for a stronger lift."}
+      </p>
+    </div>
   );
 }
 
