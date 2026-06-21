@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import EarlyAccessForm from "@/components/landing/EarlyAccessForm";
 import ConnectCalendarButton from "@/components/landing/ConnectCalendarButton";
 import { publicConfig } from "@/lib/config";
+import { getOrCreateUser } from "@/lib/data";
+
+export const dynamic = "force-dynamic";
 
 const serif = "var(--font-newsreader), Georgia, serif";
 const sans = "var(--font-inter), system-ui, sans-serif";
@@ -70,7 +74,12 @@ const MOODS = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // First-time visitors (haven't finished onboarding) go straight to the
+  // guided flow; the marketing landing shows once onboarding is complete.
+  const user = await getOrCreateUser();
+  if (!user.onboarded) redirect("/onboarding");
+
   const { integrations } = publicConfig();
   return (
     <div
@@ -333,6 +342,7 @@ export default function LandingPage() {
                 Soun<span style={{ color: "#E8A92E" }}>d</span>ay
               </div>
               <div style={{ display: "flex", gap: "28px" }}>
+                <Link href="/onboarding" style={{ fontSize: "13px", fontWeight: 300, color: "#7f9a8e", textDecoration: "none" }}>Take the tour</Link>
                 <Link href="/settings" style={{ fontSize: "13px", fontWeight: 300, color: "#7f9a8e", textDecoration: "none" }}>Settings</Link>
                 <Link href="/week" style={{ fontSize: "13px", fontWeight: 300, color: "#7f9a8e", textDecoration: "none" }}>Demo week</Link>
                 <a href="#access" style={{ fontSize: "13px", fontWeight: 300, color: "#7f9a8e", textDecoration: "none" }}>Early access</a>

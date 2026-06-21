@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import StressCurve, { type CurvePoint } from "@/components/week/StressCurve";
 import AddEventForm from "@/components/week/AddEventForm";
@@ -26,6 +27,9 @@ export default async function WeekPage({
   searchParams?: { google?: string };
 }) {
   const user = await getOrCreateUser();
+  // Gate the app behind onboarding, but let OAuth returns (?google=...) through
+  // so connecting a calendar mid-onboarding doesn't bounce back to the start.
+  if (!user.onboarded && !searchParams?.google) redirect("/onboarding");
   const events = await getWeekEvents(user.id);
   const justConnected = searchParams?.google === "connected";
 
