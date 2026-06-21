@@ -86,6 +86,15 @@ export default function SettingsForm({
   const toggle = (k: keyof NotifPrefs) =>
     setPrefs((p) => ({ ...p, [k]: !p[k] }));
 
+  async function replayOnboarding() {
+    await fetch("/api/user", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ onboarded: false }),
+    });
+    window.location.href = "/onboarding";
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <section className="card">
@@ -228,6 +237,17 @@ export default function SettingsForm({
       <button onClick={save} disabled={saving} className="btn-primary">
         {saving ? "Saving…" : saved ? "Saved ✓" : "Save settings"}
       </button>
+
+      <section className="card">
+        <span className="label">Onboarding</span>
+        <p className="mt-1 text-sm text-mist">
+          Walk through the welcome flow again — connect calendar, phone, and
+          music taste.
+        </p>
+        <button onClick={replayOnboarding} className="btn-ghost mt-3">
+          Replay onboarding
+        </button>
+      </section>
     </div>
   );
 }

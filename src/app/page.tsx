@@ -1,7 +1,5 @@
 import Link from "next/link";
 import EarlyAccessForm from "@/components/landing/EarlyAccessForm";
-import ConnectCalendarButton from "@/components/landing/ConnectCalendarButton";
-import { publicConfig } from "@/lib/config";
 
 const serif = "var(--font-newsreader), Georgia, serif";
 const sans = "var(--font-inter), system-ui, sans-serif";
@@ -71,7 +69,6 @@ const MOODS = [
 ];
 
 export default function LandingPage() {
-  const { integrations } = publicConfig();
   return (
     <div
       className="landing"
@@ -176,12 +173,50 @@ export default function LandingPage() {
             — calm tracks when you&apos;re overloaded, a confidence-priming hype song before the big meetings, pinged to your phone right when you need it.
           </p>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "22px", flexWrap: "wrap", marginTop: "36px" }}>
-            <ConnectCalendarButton googleConfigured={integrations.google} />
-            <a href="#how" style={{ fontSize: "15px", fontWeight: 400, color: "#EAF3EE", textDecoration: "none" }}>See how it works →</a>
-            <div style={{ display: "flex", alignItems: "center", gap: "11px", fontSize: "13px", fontWeight: 300, color: "rgba(234,243,238,0.6)", marginLeft: "8px" }}>
-              <span style={{ width: "24px", height: "1px", background: "rgba(234,243,238,0.3)" }} /> Google Calendar · Apple &amp; Outlook soon
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap", marginTop: "36px" }}>
+            <Link
+              href="/onboarding"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "14px 26px",
+                borderRadius: "999px",
+                fontSize: "15px",
+                fontWeight: 600,
+                color: "#08251c",
+                textDecoration: "none",
+                background:
+                  "linear-gradient(96deg, #D5CB46 6%, #8AC55F 52%, #36B68A 100%)",
+              }}
+            >
+              Sign up →
+            </Link>
+            <Link
+              href="/week"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "14px 24px",
+                borderRadius: "999px",
+                fontSize: "15px",
+                fontWeight: 500,
+                color: "#EAF3EE",
+                textDecoration: "none",
+                border: "1px solid rgba(234,243,238,0.28)",
+              }}
+            >
+              Log in
+            </Link>
+            <Link
+              href="/onboarding"
+              style={{ fontSize: "15px", fontWeight: 400, color: "#EAF3EE", textDecoration: "none" }}
+            >
+              See demo →
+            </Link>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "11px", fontSize: "13px", fontWeight: 300, color: "rgba(234,243,238,0.6)", marginTop: "18px" }}>
+            <span style={{ width: "24px", height: "1px", background: "rgba(234,243,238,0.3)" }} /> Google Calendar · Apple &amp; Outlook soon
           </div>
         </div>
       </section>
@@ -333,6 +368,7 @@ export default function LandingPage() {
                 Soun<span style={{ color: "#E8A92E" }}>d</span>ay
               </div>
               <div style={{ display: "flex", gap: "28px" }}>
+                <Link href="/onboarding" style={{ fontSize: "13px", fontWeight: 300, color: "#7f9a8e", textDecoration: "none" }}>Take the tour</Link>
                 <Link href="/settings" style={{ fontSize: "13px", fontWeight: 300, color: "#7f9a8e", textDecoration: "none" }}>Settings</Link>
                 <Link href="/week" style={{ fontSize: "13px", fontWeight: 300, color: "#7f9a8e", textDecoration: "none" }}>Demo week</Link>
                 <a href="#access" style={{ fontSize: "13px", fontWeight: 300, color: "#7f9a8e", textDecoration: "none" }}>Early access</a>
