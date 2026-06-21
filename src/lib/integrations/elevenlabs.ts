@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { EventMode } from "../types";
+import { modeHasLyrics } from "../modes";
 
 /**
  * ElevenLabs Music — generates full songs (with vocals/lyrics) from a prompt.
@@ -25,10 +26,10 @@ export async function generateMusicElevenLabs(args: {
   const key = process.env.ELEVENLABS_API_KEY?.trim();
   if (!key) return null;
 
-  // For Prime we ask the model to sing the affirmation lyrics; Wind-down is
+  // Modes with lyrics ask the model to sing the affirmations; the rest are
   // instrumental. Lyrics are folded into the prompt the model composes from.
   const prompt =
-    args.mode === "prime" && args.lyrics
+    modeHasLyrics(args.mode) && args.lyrics
       ? `${args.prompt}\n\nVocals singing these affirmation lyrics:\n${args.lyrics}`
       : args.prompt;
 

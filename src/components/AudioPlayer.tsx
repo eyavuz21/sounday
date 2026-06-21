@@ -7,11 +7,13 @@ export default function AudioPlayer({
   title,
   subtitle,
   accent = "sea",
+  onEnded,
 }: {
   src: string | null;
   title: string;
   subtitle?: string;
   accent?: "sea" | "amber";
+  onEnded?: () => void;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -92,7 +94,10 @@ export default function AudioPlayer({
         src={src ?? undefined}
         onTimeUpdate={onTime}
         onLoadedMetadata={onTime}
-        onEnded={() => setPlaying(false)}
+        onEnded={() => {
+          setPlaying(false);
+          onEnded?.();
+        }}
         preload="metadata"
       />
       <div className="flex items-center gap-4">

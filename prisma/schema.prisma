@@ -39,8 +39,8 @@ model CalendarEvent {
   attendees       String     @default("[]")
   company         String?
   isHighStakes    Boolean    @default(false)
-  // "winddown" | "prime"
-  mode            String     @default("winddown")
+  // "intense" | "focused" | "social" | "light" | "creative"
+  mode            String     @default("focused")
   // "once" | "standard" | "full"
   cadence         String     @default("none")
   stressScore     Int        @default(0)
@@ -49,6 +49,10 @@ model CalendarEvent {
   contextPurpose  String?
   trackUrl        String?
   lyrics          String?
+  // JSON string: { ready, calm, confident } each 1-3, captured before generating
+  moodBefore      String?
+  // JSON string: { ready, calm, confident } each 1-3, captured after the track plays
+  moodAfter       String?
   // "seed" (demo data) | "google" (synced from Google Calendar)
   source          String     @default("seed")
   // Google Calendar event id (used to de-dupe on re-sync); null for seed data

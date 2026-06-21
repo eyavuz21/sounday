@@ -19,6 +19,22 @@ export async function GET(
   return NextResponse.json({ event: serializeEvent(event) });
 }
 
+/** Validate a { ready, calm, confident } 1-3 payload into a JSON string (or null). */
+function serializeFeeling(v: unknown): string | null {
+  if (!v || typeof v !== "object") return null;
+  const f = v as Record<string, unknown>;
+  const ok = (n: unknown) =>
+    typeof n === "number" && Number.isInteger(n) && n >= 1 && n <= 3;
+  if (ok(f.ready) && ok(f.calm) && ok(f.confident)) {
+    return JSON.stringify({
+      ready: f.ready,
+      calm: f.calm,
+      confident: f.confident,
+    });
+  }
+  return null;
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: { id: string } },
@@ -36,6 +52,9 @@ export async function PATCH(
   if ("contextWho" in body) data.contextWho = body.contextWho || null;
   if ("contextWhat" in body) data.contextWhat = body.contextWhat || null;
   if ("contextPurpose" in body) data.contextPurpose = body.contextPurpose || null;
+  if ("moodBefore" in body)
+    data.moodBefore = serializeFeeling(body.moodBefore);
+  if ("moodAfter" in body) data.moodAfter = serializeFeeling(body.moodAfter);
 
   // Recompute high-stakes if context/purpose changed (purpose can flip it).
   const nextPurpose =

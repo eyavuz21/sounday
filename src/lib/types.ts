@@ -1,6 +1,11 @@
 export type Attendee = { name: string; email: string };
 
-export type EventMode = "winddown" | "prime";
+export type EventMode =
+  | "intense"
+  | "focused"
+  | "social"
+  | "light"
+  | "creative";
 export type Cadence = "none" | "once" | "standard" | "full";
 
 export type NotifPrefs = {
@@ -26,4 +31,11 @@ export type Mood = {
   energy: number;
   valence: number;
   label: string;
+};
+
+/** Pre/post check-in: how ready, calm and confident the user feels (each 1-3). */
+export type Feeling = {
+  ready: number;
+  calm: number;
+  confident: number;
 };

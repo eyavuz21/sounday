@@ -1,5 +1,11 @@
-import { acousticsFor, buildMusicPrompt, type Acoustics } from "../acoustics";
-import type { EventMode } from "../types";
+import {
+  acousticsFor,
+  calibrateAcoustics,
+  buildMusicPrompt,
+  type Acoustics,
+} from "../acoustics";
+import type { EventMode, Feeling } from "../types";
+import { modeLabel } from "../modes";
 import { generateTrack as sunoGenerate, fallbackTrack } from "./suno";
 import { pickTrack, spotifyConfigured } from "./spotify";
 import { generateMusicElevenLabs, elevenLabsConfigured } from "./elevenlabs";
@@ -43,9 +49,11 @@ export async function generateMusic(args: {
   dayLoad: number;
   styleHint?: string | null;
   lyrics?: string | null;
+  feeling?: Feeling | null;
 }): Promise<MusicResult> {
-  const { mode, dayLoad, styleHint, lyrics } = args;
-  const acoustics = acousticsFor(mode, dayLoad);
+  const { mode, dayLoad, styleHint, lyrics, feeling } = args;
+  // Day load sets the base recipe; the user's check-in then calibrates it.
+  const acoustics = calibrateAcoustics(acousticsFor(mode, dayLoad), mode, feeling);
   const prompt = buildMusicPrompt(mode, acoustics, styleHint);
 
   // 1) Suno — full songs with sung lyrics (best fit).
@@ -64,7 +72,7 @@ export async function generateMusic(args: {
         provider: "elevenlabs",
         kind: "audio",
         trackUrl: r.url,
-        title: mode === "prime" ? "Prime (ElevenLabs)" : "Wind-down (ElevenLabs)",
+        title: `${modeLabel(mode)} (ElevenLabs)`,
         acoustics,
       };
     }
@@ -78,7 +86,7 @@ export async function generateMusic(args: {
         provider: "replicate",
         kind: "audio",
         trackUrl: r.url,
-        title: mode === "prime" ? "Prime (MusicGen)" : "Wind-down (MusicGen)",
+        title: `${modeLabel(mode)} (MusicGen)`,
         acoustics,
       };
     }
