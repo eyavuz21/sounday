@@ -134,8 +134,11 @@ export default function SettingsForm({
       </section>
 
       <section className="card">
-        <label className="label" htmlFor="playlist">
-          Link a Spotify playlist <span className="text-mist">(optional)</span>
+        <label className="label flex items-center gap-2" htmlFor="playlist">
+          <span>
+            Link a Spotify playlist <span className="text-mist">(optional)</span>
+          </span>
+          <span className="badge bg-amber-100 text-amber-700">Coming soon</span>
         </label>
         <input
           id="playlist"
@@ -147,11 +150,10 @@ export default function SettingsForm({
           onChange={(e) => setPlaylist(e.target.value)}
         />
         <p className="mt-2 text-xs text-mist">
-          We read the playlist&rsquo;s artists and steer new tracks toward that
-          style (kept to each mode&rsquo;s mood).{" "}
-          {integrations.spotify
-            ? "Note: with a Spotify app in development mode, reading playlist contents may be blocked — your music taste above is used as the fallback."
-            : "Spotify isn't connected, so your music taste above is used instead."}
+          We&rsquo;ll read the playlist&rsquo;s artists and steer new tracks
+          toward that style (kept to each mode&rsquo;s mood). Playlist
+          personalization is awaiting Spotify&rsquo;s extended-access approval —
+          for now your music taste above shapes every track.
         </p>
       </section>
 
