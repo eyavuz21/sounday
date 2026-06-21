@@ -30,7 +30,7 @@ A registry defines five modes, each with a label, subtitle, accent color/dot, a 
 The event page shows these as a **5-button grid** (colored dot + label + subtitle). Only `intense` has sung lyrics today; the others are instrumental. These five must match the five moods listed on the landing page.
 
 ## Acoustic engine (the differentiator)
-Each mode + the day's load (0–100) produces a concrete **acoustic recipe**: `tempoBpm, energy, valence, repetition, surprise, uncertainty, timbre`. Grounded in the expectancy model of musical pleasure (Cheung et al., 2019): pleasure peaks at low-uncertainty+high-surprise ("anthemic lift") or high-uncertainty+low-surprise ("settling resolution"). Higher load grounds the track (fewer jolts). Reference recipes at load ≈ 62:
+Each mode + a 0–100 load score produces a concrete **acoustic recipe**: `tempoBpm, energy, valence, repetition, surprise, uncertainty, timbre`. Grounded in the expectancy model of musical pleasure (Cheung et al., 2019): pleasure peaks at low-uncertainty+high-surprise ("anthemic lift") or high-uncertainty+low-surprise ("settling resolution"). Higher load grounds the track (fewer jolts). Reference recipes at load ≈ 62:
 
 - **intense** ~102 BPM, energy 73%, surprise 30%, repetition 75%, uncertainty 28%, valence 72% — warm grounded low-end, steady driving pulse, confident keys.
 - **focused** ~83 BPM, energy 35%, surprise 14%, repetition 87%, uncertainty 46%, valence 55% — low-distraction keys, soft pads, minimal percussion, no vocals.
@@ -38,7 +38,13 @@ Each mode + the day's load (0–100) produces a concrete **acoustic recipe**: `t
 - **light** ~65 BPM, energy 22%, surprise 19%, repetition 78%, uncertainty 57%, valence 62% — spacious airy pads, unhurried felt piano, soft reverb.
 - **creative** ~93 BPM, energy 60%, surprise 62%, repetition 45%, uncertainty 60%, valence 66% — textured evolving synths, curious motifs.
 
-Display the recipe as a 6-metric card ("Acoustic recipe · from your day's load") after generation, plus the Cheung profile label.
+Display the recipe as a 6-metric card ("Acoustic recipe · from your day + this meeting") after generation, plus the Cheung profile label.
+
+### Per-event calibration (the load is blended, not just the day)
+The recipe must reflect **the specific meeting**, not just the day, so two events on the same day sound different. Compute a per-event intensity and blend it with the day score:
+- `computeEventLoad(event)` → 0–100 from: **duration** (up to ~28 at 2h+), **+30 if high-stakes**, **external attendees** (≤24), **high-stakes keywords** (≤18), and an **early/evening slot** (<9am or ≥6pm, +8).
+- `blendedLoad = round(0.55 × dayLoad + 0.45 × eventLoad)`, and the acoustic engine consumes `blendedLoad`.
+- Example on a day at load 62: a 2pm board pitch → blended ≈ **63** (more grounding/steadier); a 9:30am 1:1 → blended ≈ **37** (lighter, airier). The mood check-in then calibrates on top of this.
 
 ## Before/after mood check-in (calibration)
 On the event page, above Generate, show **"How do you feel about this right now?"** with three word-chip rows, each 1–3:
@@ -60,6 +66,8 @@ This is the brain of the app — events are labelled automatically, but the user
 
 ## Meeting context + lyrics
 The event page has a "Meeting context" section: Who is it with? / What do they do? / What's the purpose?, plus an "Auto-fill from company" button (enriches from the attendee's company) and an optional voice-fill. For lyric modes (`intense`), generate **affirmation lyrics** built from the purpose + the company name (e.g. naming "NorthStar Robotics" and the goal) — second-person encouragement that must NOT narrate the user's own name. Show lyrics in a collapsible "Affirmation lyrics" only when the mode has lyrics.
+
+**"Tell me more" context nudge:** because lyric tracks read generic without context, show a gentle, **non-blocking** hint above Generate **only when** `modeHasLyrics(mode) && !purpose && !who && !company`. Copy: *"Tell me a bit more so the affirmation fits this meeting — add the purpose (and who it's with) and they'll name what you're walking into."* Include an "Add details" link that scrolls to and focuses the purpose field. Never show it for instrumental modes; never block generation (the user can generate anyway, it'll just be more generic).
 
 ## Music generation (provider cascade)
 Build a style prompt from the acoustics (tempo/energy/valence/repetition/surprise/ambiguity + timbre + mode descriptor + "with vocals"/"instrumental" + optional taste hint), then render audio via a cascade, first available wins: **Suno → ElevenLabs Music → Replicate MusicGen → Spotify (track select) → bundled sample WAV.** With a real generation key, label the player "Generated with ElevenLabs Music · style: …"; without one, fall back to a Spotify embed labelled "Matched from Spotify". The acoustic recipe + lyrics are always computed regardless of provider. Show a small player with play/scrub and the mode title.
