@@ -14,7 +14,7 @@ For each calendar event, Sounday infers the day's stress **load** and lets the u
 2. **Week (`/week`)** — the week as a vertical list of days; each event row shows time, title, attendees, a **stress score**, and tags (e.g. "High-stakes", plus the mode). A stress curve across the top. Works with no login (seeded demo data). Includes an **"+ Add an event"** control (see below) so users can add meetings manually without connecting a calendar.
 3. **Event detail (`/event/[id]`)** — the heart of the app (see below).
 4. **Settings (`/settings`)** — music taste field, "Connect Google Calendar" (OAuth), and a "Link a Spotify playlist" field marked **"Coming soon"**.
-5. **Onboarding** — light intro.
+5. **Onboarding (`/onboarding`)** — a guided multi-screen first-run flow (see "Onboarding flow" below).
 
 ## The five soundtrack modes (single source of truth — do not hardcode names elsewhere)
 A registry defines five modes, each with a label, subtitle, accent color/dot, a **polarity** (`lift` = energizing, or `settle` = calming), and a `hasLyrics` flag:
@@ -78,6 +78,23 @@ Build a style prompt from the acoustics (tempo/energy/valence/repetition/surpris
 - Optional: push/SMS reminders ("prep cadence": night before / morning of / 15 min before), voice input for context, Stripe for Pro.
 - Store events with: title, time, duration, attendees, company, stressScore, isHighStakes, mode (default `focused`), cadence, moodBefore/moodAfter, generated track + lyrics, and a `source` field (`seed` | `google` | `manual`).
 - Reminders are scheduled per event from the cadence (once / standard / full) at: night before (9pm), morning of (8am), 15 min before.
+
+## Onboarding flow (`/onboarding`)
+A guided, iOS-style first-run flow rendered inside a single **phone frame** (one screen visible at a time, driven by a `screen` state value; phone container radius 46px). It has its **own visual system, distinct from the app's aurora theme**: soft off-white background `#F9FAF7`, ink text `#14201A`/`#1A1A1A`, teal accent `#0E9E8E`, brand green `#86DF8D`, lime `#D6F56E`, dark pill CTA `#263238`, field fill `#F6F8F4`. SF Pro / Inter for most screens; **Instrument Serif + Nunito only on the green welcome splash**. Primary buttons: full-width, 56px tall, 28px radius, dark `#263238`. Cards/inputs: 18–22px radius, hairline borders `rgba(20,32,26,0.1)`. Screen-enter animation: fade + 10px rise (~600ms); press feedback `scale(0.98)`.
+
+**Flow (7 screens):** `Welcome splash → Carousel (2 panels) → Connect calendar → Phone number → Music taste → Calendar scoring (auto) → This week in sound → [app home]`.
+
+1. **Welcome splash** — full-bleed animated green gradient (`linear-gradient(176deg, #0a3b2c, #115239, #1d7a4e, #3da75f, #7ccf6d, #BBE96B, #D6F56E)` at 200% size, panning ~22s) + subtle noise. Sounday wordmark (4-bar mark, lime "d"). Instrument-Serif headline **"Start *calm.* Stay *focused.* Finish *strong.*"** + sub "Your calendar turned into the soundtrack that gets you ready for what's next." Three frosted feature pills. Lime-gradient CTA **"Learn more →"**.
+2. **Carousel (2 panels)** — off-white; top nav has back chevron + **"Skip"** (skip jumps straight to Connect). Each panel: a circular illustration over a mint blob, a centered bold title (~27px) and gray body, page dots (active = green pill), CTA **"Continue"** (panel 0) then **"Get Started"** (panel 1). Copy: p0 "The right music to perform. Backed by science." / "Connect your calendar and Sounday builds your personal soundtrack before the week begins."; p1 "Music that knows your schedule" / "Back-to-back meetings get calm, grounding tracks. High-stakes moments get a confidence-priming Prime track."
+3. **Connect calendar** — title "First, let's see your week." + privacy line "Sounday reads event titles, times, and duration only. Processed in memory and immediately discarded. Your meetings stay yours." Two connect cards (white icon tile + real **Google Calendar** / **Microsoft Outlook** logo, label, action, chevron) and an underlined **"Upload an ICS file instead"** link. The **Google card starts the real Google OAuth connect** (read-only) when configured; Outlook is "Soon" and ICS/Outlook advance to the next step.
+4. **Phone number** — "Where should we ping you?", one underline `tel` field ("for SMS prep tracks"), caption "Optional — you can add this later.", dark CTA **Continue**.
+5. **Music taste** — "Your music taste", up to **5** genre/artist chips (typed + Add button, or a placeholder "Add by voice"), `n/5` counter, removable teal chips, dark CTA **"See my week"**. Persists phone + taste before advancing.
+6. **Calendar scoring (transitional)** — centered ripple rings around a teal checkmark, "Your week is in." / "Sounday is scoring your week now.", animated equalizer bars. **Auto-advances after 3.6s** (this timer stands in for the real connect + async scoring job — keep the animation as the loading state). No button.
+7. **This week in sound** — off-white scrollable summary: eyebrow "YOUR WEEK" + "This week in sound"; a white **stress-curve card** (teal line + green area fill Mon–Sun with the Wed peak enlarged), then day blocks (e.g. Monday "Light · load 25" with event rows carrying green "Wind-down" dot-chips; Tuesday "Busy · load 62 · suggests wind-down"). Pinned dark CTA **"Enter Sounday"** → the main app (`/week`).
+
+**Routing:** Skip (carousel) → Connect. Back chevron appears on the carousel + Connect/Phone/Music/This-week, with **explicit** back targets (not "screen − 1"): Connect → carousel p1, Phone → Connect, Music → Phone, This-week → Music. **Persist** phone + music taste (and an `onboarded` flag) when leaving Music; "Enter Sounday" routes into the app home.
+
+**Integration TODOs / mock data:** the carousel circular illustrations are placeholders (swap for final Figma assets); the scoring screen's 3.6s timer is a stand-in for the real fetch + scoring; and the "This week in sound" chart/loads/events are static mock data — wire to the real calendar/scoring data on integration. Outlook + ICS are not yet wired (advance to the next step for now).
 
 ## Tech (reference — adapt to Base44)
 Next.js (App Router) + TypeScript + Tailwind, Prisma + SQLite, deployed on Render. Keep a `modes` registry as the single source for all mode logic (UI, calibration, lyrics eligibility, prompt building) so adding/removing a mode is one edit.
