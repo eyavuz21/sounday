@@ -170,8 +170,8 @@ export default function LandingPage() {
           </div>
 
           <p style={{ fontSize: "21px", fontWeight: 300, lineHeight: 1.5, color: "#E3EFE8", maxWidth: "620px", margin: "30px 0 0" }}>
-            Soun<span style={{ color: "#E8A92E", fontWeight: 600 }}>d</span>ay reads the shape of your calendar and renders a playlist for every day — grounding sound for the intense, open air for the light.{" "}
-            <span style={{ color: "#E8A92E", fontWeight: 500 }}>Calendar in, tunes out.</span>
+            <span style={{ color: "#F4F9F5", fontWeight: 600 }}>Your calendar, turned into a personal soundtrack</span>{" "}
+            — calm tracks when you&apos;re overloaded, a confidence-priming hype song before the big meetings, pinged to your phone right when you need it.
           </p>
 
           <div style={{ display: "flex", alignItems: "center", gap: "22px", flexWrap: "wrap", marginTop: "36px" }}>
