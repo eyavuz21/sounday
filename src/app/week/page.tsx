@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import StressCurve, { type CurvePoint } from "@/components/week/StressCurve";
+import AddEventForm from "@/components/week/AddEventForm";
 import { getOrCreateUser, getWeekEvents, type SerializedEvent } from "@/lib/data";
 import { computeDayLoad, suggestDayMode } from "@/lib/stress";
 import { modeConfig } from "@/lib/modes";
@@ -76,9 +77,13 @@ export default async function WeekPage({
           </div>
         )}
 
-        <section className="card mb-6 animate-fade-up">
+        <section className="card mb-4 animate-fade-up">
           <StressCurve points={points} />
         </section>
+
+        <div className="mb-6">
+          <AddEventForm />
+        </div>
 
         <div className="flex flex-col gap-5">
           {visibleDays.map((d) => {
