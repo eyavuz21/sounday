@@ -128,3 +128,8 @@ the public Vapi key is the only value exposed to the browser (via `/api/config`)
 `User` (email, phone, notifPrefs, musicTaste) · `CalendarEvent` (title, start,
 duration, attendees, company, isHighStakes, mode, cadence, stressScore, context,
 trackUrl, lyrics) · `Reminder` · `WaitlistSignup` · `AnalyticsEvent` (traction).
+
+## Credits
+
+Built at the Megathon (Amsterdam) by [Emre Yavuz](https://github.com/eyavuz21)
+and [Hodo Elmi Aden](https://github.com/hodoea).
