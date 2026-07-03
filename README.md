@@ -2,6 +2,8 @@
 
 **Your calendar, turned into a personal soundtrack.**
 
+**🔴 Live demo: <https://sounday-piqy.onrender.com> — pre-seeded with a demo week, no login needed.** (Free-tier hosting: first load after idle can take ~30s to wake.)
+
 Calm tracks when you're overloaded, a confidence-priming hype song before
 high-stakes meetings — pinged to your phone right when you need it.
 
