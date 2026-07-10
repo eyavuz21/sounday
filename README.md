@@ -2,12 +2,12 @@
 
 **Your calendar, turned into a personal soundtrack.**
 
-**🔴 Live demo: <https://sounday-piqy.onrender.com> — pre-seeded with a demo week, no login needed.** (Free-tier hosting: first load after idle can take ~30s to wake.)
+**🔴 Live demo: <https://sounday-piqy.onrender.com>, pre-seeded with a demo week, no login needed.** (Free-tier hosting: first load after idle can take ~30s to wake.)
 
 ![Sounday landing page](docs/screenshot.png)
 
 Calm tracks when you're overloaded, a confidence-priming hype song before
-high-stakes meetings — pinged to your phone right when you need it.
+high-stakes meetings, pinged to your phone right when you need it.
 
 Sounday is a mobile-first web app that reads your week, scores each day's stress,
 flags your high-stakes moments, and generates a mood-matched track for every
@@ -19,8 +19,8 @@ your phone via SMS on a cadence you choose.
 ## Tech stack
 
 - **Next.js 14** (App Router) + **TypeScript**
-- **Tailwind CSS** — serene blue/teal, mobile-first, large tap targets
-- **Prisma + SQLite** — local, zero-config datastore
+- **Tailwind CSS**: serene blue/teal, mobile-first, large tap targets
+- **Prisma + SQLite**: local, zero-config datastore
 - Integrations: **ElevenLabs Music** (AI track generation), **Cala** (company
   enrichment), **Vapi** (voice input), **Google Calendar** (auto-import schedule),
   **Spotify** (taste/style hint), **Twilio** (SMS), **Stripe** (€1 Prime unlock)
@@ -34,10 +34,10 @@ Replicate → Spotify → sample) and switches on the moment a key is present.
 
 | Route | What it is |
 |-------|------------|
-| `/` | Landing — hero, waitlist + live signup counter, "Unlock Prime — €1" |
+| `/` | Landing: hero, waitlist + live signup counter, "Unlock Prime" (€1) |
 | `/onboarding` | 3-step setup (phone + music taste, by text or voice) |
-| `/week` | Week dashboard — stress curve + days with events & badges |
-| `/event/[id]` | Event detail — context card, generate, mode, cadence, player |
+| `/week` | Week dashboard: stress curve + days with events & badges |
+| `/event/[id]` | Event detail: context card, generate, mode, cadence, player |
 | `/settings` | Phone, notification prefs, music taste, **Connect Google Calendar** |
 
 ## Getting started
@@ -61,8 +61,8 @@ npm run dev                # http://localhost:3000
 - pressure keywords in titles (`deadline, due, review, pitch, interview, board, presentation`)
 - little free time between meetings
 
-The score maps to musical mood (`moodFromScore`) — **higher load ⇒ calmer
-energy** — and a high day score suggests **Wind-down** mode.
+The score maps to musical mood (`moodFromScore`): **higher load ⇒ calmer
+energy**. A high day score suggests **Wind-down** mode.
 
 ## High-stakes detection (`detectHighStakes`)
 
@@ -76,7 +76,7 @@ An event is high-stakes if **any** of:
 High-stakes events default to **Prime** mode + **Full prep** cadence; routine
 events get no reminders.
 
-## Part 2 integrations — and where real services plug in
+## Part 2 integrations, and where real services plug in
 
 | Letter | Service | File | Fallback |
 |--------|---------|------|----------|
@@ -86,7 +86,7 @@ events get no reminders.
 | D | **Twilio** SMS | `src/lib/integrations/twilio.ts` | simulated send |
 | E | **Stripe** €1 unlock | `src/lib/integrations/stripe.ts` | simulated success URL |
 
-- **Prime lyrics** are built in `src/lib/integrations/lyrics.ts` — supportive,
+- **Prime lyrics** are built in `src/lib/integrations/lyrics.ts`: supportive,
   confidence-building, second-person (never narrates the person's name).
   **Wind-down** generates calm instrumental (no lyrics).
 - **Music taste** (Settings/onboarding) is passed as a *style hint* to
@@ -124,7 +124,7 @@ for a persistent database.
 
 ## Secrets
 
-All keys live in `.env` (gitignored) — see `.env.example`. Nothing is hardcoded;
+All keys live in `.env` (gitignored); see `.env.example`. Nothing is hardcoded;
 the public Vapi key is the only value exposed to the browser (via `/api/config`).
 
 ## Data models (`prisma/schema.prisma`)
